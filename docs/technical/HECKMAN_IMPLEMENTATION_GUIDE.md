@@ -20,7 +20,7 @@ Para cada nível de ancoragem, aqui está exatamente o que você precisa fazer. 
 Na secção de **Metodologia** do seu paper, onde você descreve o DGP, adicione o seguinte texto. Isto mostra que o design do seu DGP foi intencional e baseado em teoria económica.
 
 ```text
-O design do nosso Processo Gerador de Dados (DGP) é intencionalmente construído sobre os fundamentos da econometria laboral. Especificamente, a nossa variável latente `ability` que influencia tanto a seleção para o tratamento (`T`) quanto o resultado (`Y`) é uma implementação direta do problema de viés de seleção formalizado por Heckman (1979). Ao fazer isto, criamos um desafio realista onde métodos de correlação simples, como embeddings preditivos, estão destinados a falhar.
+O design do nosso Processo Gerador de Dados (DGP) é intencionalmente construído sobre os fundamentos da econometria laboral. Especificamente, a nossa variável latente `ability` que influencia tanto a seleção para o tratamento (`T`) quanto o resultado (`Y`) é uma implementação direta do problema de viés de seleção formalizado por Heckman (1979). Ao fazer isto, criamos um desafio realista onde métodos de correlação simples, como embeddings preditivos, produzem estimativas enviesadas.
 
 Adicionalmente, a forma como `ability` modula o efeito do tratamento (CATE) e as transições de carreira inspira-se no trabalho sobre formação de capital humano e dinâmica de competências de Cunha & Heckman (2007). Os nossos *career embeddings* podem, portanto, ser vistos como uma tentativa de capturar, de forma não-paramétrica, a manifestação deste capital humano latente ao longo da trajetória profissional de um indivíduo.
 ```
@@ -59,7 +59,7 @@ Para garantir que você tem estes resultados, modifique o `main.py` para explici
 
 Na secção de **"Limitações e Pesquisa Futura"**, adicione o seguinte parágrafo:
 
-> "Uma limitação do nosso DGP atual é que a seleção para o tratamento, embora dependente de `ability`, segue um modelo de forma reduzida. Para endereçar a crítica de Heckman sobre modelos estruturais, desenvolvemos uma versão alternativa do DGP (v3.2) onde a seleção para o tratamento resulta de um **modelo de decisão racional**. Neste modelo, os agentes escolhem o tratamento se este maximizar a sua utilidade esperada, considerando os benefícios salariais e os custos de adaptação. Verificámos que os nossos resultados principais se mantêm, demonstrando que o método de embeddings debiased é robusto mesmo sob uma forma de seleção estrutural. Um passo natural para pesquisa futura seria integrar estes embeddings dentro de um modelo dinâmico de otimização de ciclo de vida completo."
+> "Uma limitação do nosso DGP atual é que a seleção para o tratamento, embora dependente de `ability`, segue um modelo de forma reduzida. Para endereçar a crítica de Heckman sobre modelos estruturais, desenvolvemos uma versão alternativa do DGP (v3.2) onde a seleção para o tratamento resulta de um **modelo de decisão racional**. Neste modelo, os agentes escolhem o tratamento se este maximizar a sua utilidade esperada, considerando os benefícios salariais e os custos de adaptação. Verificámos que os nossos resultados principais se mantêm, sugerindo que o método de embeddings debiased é robusto sob esta forma de seleção estrutural. Um passo natural para pesquisa futura seria integrar estes embeddings dentro de um modelo dinâmico de otimização de ciclo de vida completo."
 
 ### (B) Ação no Código
 
