@@ -138,7 +138,7 @@ class DebiasedGRU(nn.Module):
     about T. An adversary tries to predict T from the embedding; the encoder
     is penalized for the adversary's success.
 
-    This is the winning variant that achieves ATE = 0.413 (bias: -0.087).
+    This is the winning variant that achieves ATE = 0.6712 (bias: 0.1712, 34.2% error).
 
     Architecture:
         Embedding → GRU → Linear(phi_dim) → phi

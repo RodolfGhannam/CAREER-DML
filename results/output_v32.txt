@@ -1,6 +1,3 @@
-/home/ubuntu/career_dml_package/src/validation.py:102: RuntimeWarning: divide by zero encountered in scalar divide
-  delta = (beta_restricted * (R2_max - r2_restricted)) / (
-
 ======================================================================
   ETAPA 1: Geração de Dados — DGP v3.2 (Heckman Structural)
 ======================================================================

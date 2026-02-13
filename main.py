@@ -3,7 +3,7 @@ CAREER-DML: Main Pipeline v3.2 (HECKMAN INTEGRATED)
 Orquestrador principal que executa os 3 níveis de ancoragem Heckman.
 
 Uso:
-    python main_v32.py
+    python main.py
 
 Fluxo:
     1. Gera dados com DGP v3.2 (seleção estrutural Heckman-style)

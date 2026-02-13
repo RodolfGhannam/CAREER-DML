@@ -1,5 +1,3 @@
-> Este documento representa a versão final da proposta de investigação, expandida para 5 páginas e incorporando todas as 17 referências e 10 instruções vinculativas da deliberação final do Board de 7 especialistas. O objetivo é atingir a nota máxima e garantir a conformidade total com os requisitos da Copenhagen Business School.
-
 # Research Proposal: Human-Machine Rivalry in Career Trajectories
 
 **Candidate**: Rodolf Mikel Ghannam Neto
