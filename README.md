@@ -38,13 +38,13 @@ The pipeline was executed successfully, validating the core hypotheses of the fr
 
 | Variant | ATE Estimate | Bias vs. True ATE (0.50) | % Error |
 | :--- | :--- | :--- | :--- |
-| Predictive GRU | 0.7146 | 0.2146 | 42.9% |
-| Causal GRU (VIB) | 0.8768 | 0.3768 | 75.4% |
-| **Debiased GRU (Adversarial)** | **0.6704** | **0.1704** | **34.1%** |
+| Predictive GRU | 0.7162 | 0.2162 | 43.2% |
+| Causal GRU (VIB) | 0.8726 | 0.3726 | 74.5% |
+| **Debiased GRU (Adversarial)** | **0.6712** | **0.1712** | **34.2%** |
 
 ### 2. DML Outperforms Classical Heckman
 
-Our DML + Career Embeddings approach reduces the estimation bias by **90.7%** compared to the classical Heckman two-step method, demonstrating the power of representing high-dimensional career histories.
+Our DML + Career Embeddings approach reduces the estimation bias by **90.6%** compared to the classical Heckman two-step method, demonstrating the power of representing high-dimensional career histories.
 
 ![DML vs Heckman](results/figures/fig3_dml_vs_heckman.png)
 
@@ -60,7 +60,7 @@ This project requires Python 3.9+ and the dependencies listed in `requirements.t
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/YOUR_USERNAME/CAREER-DML.git
+    git clone https://github.com/rodolfghannam/CAREER-DML.git
     cd CAREER-DML
     ```
 
@@ -87,7 +87,7 @@ If you use this framework in your research, please cite this repository.
   year = {2026},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{https://github.com/YOUR_USERNAME/CAREER-DML}}
+  howpublished = {\url{https://github.com/rodolfghannam/CAREER-DML}}
 }
 ```
 

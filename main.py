@@ -118,7 +118,7 @@ def main():
     # =========================================================================
     # ETAPA 1: Gerar Dados com DGP v3.2 (Seleção Estrutural)
     # =========================================================================
-    print_header("ETAPA 1: Geração de Dados — DGP v3.2 (Heckman Structural)")
+    print_header("ETAPA 1: Geração de Dados -- DGP v3.2 (Heckman Structural)")
 
     dgp = SyntheticDGP(selection_mode="structural")
     panel = dgp.generate_panel_data(n_individuals=N_INDIVIDUALS, n_periods=N_PERIODS)
@@ -173,7 +173,7 @@ def main():
     # =========================================================================
     # ETAPA 3: Estimação DML com Cada Variante
     # =========================================================================
-    print_header("ETAPA 3: Estimação DML — Comparação das 3 Variantes")
+    print_header("ETAPA 3: Estimação DML -- Comparação das 3 Variantes")
 
     variants = {
         "Predictive GRU": X_pred,
@@ -222,7 +222,7 @@ def main():
     # =========================================================================
     # ETAPA 4: Validação Completa (Melhor Variante)
     # =========================================================================
-    print_header(f"ETAPA 4: Validação Completa — {best_variant}")
+    print_header(f"ETAPA 4: Validação Completa -- {best_variant}")
 
     best = results[best_variant]
     X_best = best["X_embed"]
@@ -256,18 +256,18 @@ def main():
     delta = sensitivity_analysis_oster(Y, T, X_best)
     print(f"  Delta de Oster: {delta:.4f}")
     if delta == float("inf"):
-        print("  Interpretação: delta = inf → robustez máxima (R² = R²_max)")
+        print("  Interpretação: delta = inf -> robustez máxima (R² = R²_max)")
     elif delta > 2:
-        print(f"  Interpretação: delta = {delta:.2f} > 2 → robusto (Oster, 2019)")
+        print(f"  Interpretação: delta = {delta:.2f} > 2 -> robusto (Oster, 2019)")
     else:
-        print(f"  Interpretação: delta = {delta:.2f} < 2 → sensível a não-observáveis")
+        print(f"  Interpretação: delta = {delta:.2f} < 2 -> sensível a não-observáveis")
 
     # --- 4d. Placebo Tests ---
     print_subheader("4d. Placebo Tests")
     pipeline_placebo = CausalDMLPipeline()
     placebo = run_placebo_tests(pipeline_placebo, Y, T, X_best)
-    print(f"  ATE com tratamento aleatório: {placebo['random_treatment_ate']:.4f} (esperado ≈ 0)")
-    print(f"  ATE com outcome aleatório: {placebo['random_outcome_ate']:.4f} (esperado ≈ 0)")
+    print(f"  ATE com tratamento aleatório: {placebo['random_treatment_ate']:.4f} (esperado ~= 0)")
+    print(f"  ATE com outcome aleatório: {placebo['random_outcome_ate']:.4f} (esperado ~= 0)")
 
     passed = abs(placebo["random_treatment_ate"]) < 0.2 and abs(placebo["random_outcome_ate"]) < 0.2
     print(f"  Status: {'PASSOU' if passed else 'FALHOU'}")
@@ -275,7 +275,7 @@ def main():
     # =========================================================================
     # ETAPA 5: Benchmark Heckman Two-Step (Nível 2)
     # =========================================================================
-    print_header("ETAPA 5: Benchmark — Heckman Two-Step vs. DML")
+    print_header("ETAPA 5: Benchmark -- Heckman Two-Step vs. DML")
 
     heckman_bench = run_heckman_two_step_benchmark(Y, T, X_best)
 
@@ -299,7 +299,7 @@ def main():
     # =========================================================================
     # ETAPA 6: Teste de Robustez Estrutural vs. Mecânico (Nível 3)
     # =========================================================================
-    print_header("ETAPA 6: Robustez — Seleção Estrutural vs. Mecânica (Nível 3 Heckman)")
+    print_header("ETAPA 6: Robustez -- Seleção Estrutural vs. Mecânica (Nível 3 Heckman)")
 
     robustness = robustness_structural_vs_mechanical(
         dml_pipeline=None,  # Será instanciado internamente
@@ -320,25 +320,25 @@ def main():
     # =========================================================================
     # RELATÓRIO FINAL
     # =========================================================================
-    print_header("RELATÓRIO FINAL — CAREER-DML v3.2 (HECKMAN INTEGRATED)")
+    print_header("RELATÓRIO FINAL -- CAREER-DML v3.2 (HECKMAN INTEGRATED)")
 
     print("""
   NÍVEL 1 (Narrativa): O DGP implementa o viés de seleção de Heckman (1979)
   e a complementaridade capital-competência de Cunha & Heckman (2007).
-  → Status: INTEGRADO (ver textos para o paper abaixo)
+  -> Status: INTEGRADO (ver textos para o paper abaixo)
 
   NÍVEL 2 (Interpretativo): A variance decomposition e os GATES são
   interpretados pela lente de Heckman. O benchmark Heckman two-step
   demonstra a superioridade dos career embeddings sobre a IMR clássica.
-  → Status: EXECUTADO E VALIDADO
+  -> Status: EXECUTADO E VALIDADO
 
   NÍVEL 3 (Estrutural): O DGP v3.2 implementa um modelo de decisão
   racional (utility-based selection). O teste de robustez confirma que
   os resultados se mantêm sob ambos os modos de seleção.
-  → Status: EXECUTADO E VALIDADO
+  -> Status: EXECUTADO E VALIDADO
     """)
 
-    print("  TEXTOS PARA O PAPER (Nível 1 — copiar para a secção de Metodologia):")
+    print("  TEXTOS PARA O PAPER (Nível 1 -- copiar para a secção de Metodologia):")
     print("  " + "-" * 66)
     print("""
   "O design do nosso Processo Gerador de Dados (DGP) é intencionalmente

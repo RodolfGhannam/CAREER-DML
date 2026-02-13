@@ -92,16 +92,28 @@ def sensitivity_analysis_oster(
     Y: np.ndarray, T: np.ndarray, X_controlled: np.ndarray, R2_max: float = 1.0
 ) -> float:
     """Calcula o delta de Oster (2019) para sensibilidade a não observáveis."""
-    model_restricted = LinearRegression().fit(np.column_stack([T, X_controlled]), Y)
-    beta_restricted = model_restricted.coef_[0]
-    r2_restricted = model_restricted.score(np.column_stack([T, X_controlled]), Y)
 
-    if r2_restricted >= R2_max:
+    # Restricted model (sem controles)
+    beta_restricted = np.cov(Y, T)[0, 1] / np.var(T)
+    y_pred_restricted = beta_restricted * T
+    r2_restricted = 1 - np.var(Y - y_pred_restricted) / np.var(Y)
+
+    # Controlled model (com embeddings)
+    model = LinearRegression()
+    X_with_T = np.column_stack([T, X_controlled])
+    model.fit(X_with_T, Y)
+    beta_controlled = model.coef_[0]
+    r2_controlled = model.score(X_with_T, Y)
+
+    # Oster delta: evitar divisão por zero
+    denominator = (beta_controlled - beta_restricted) * (r2_controlled - r2_restricted)
+    if abs(denominator) < 1e-10:  # Praticamente zero
+        # Se o denominador é zero, significa que não há mudança no coeficiente ou R²
+        # ao adicionar controles, indicando robustez máxima ou um caso degenerado.
+        # Retornamos np.inf para indicar que o delta é indefinido ou muito grande.
         return np.inf
-
-    delta = (beta_restricted * (R2_max - r2_restricted)) / (
-        r2_restricted * (1 - R2_max)
-    )
+    
+    delta = (beta_restricted * (R2_max - r2_restricted)) / denominator
     return abs(delta)
 
 

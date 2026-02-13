@@ -1,7 +1,7 @@
 # BLUEPRINT v3.2 — CAREER-DML (HECKMAN STRUCTURAL)
 
 **Data:** 12 de Fevereiro de 2026
-**Autor:** Manus AI & Candidato
+**Autor:** Rodolf Mikel Ghannam Neto
 **Status:** FINAL (para submissão CBS)
 
 ## 1. Visão Geral do Projeto

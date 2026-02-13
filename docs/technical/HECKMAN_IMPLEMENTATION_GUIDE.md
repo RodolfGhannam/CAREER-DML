@@ -1,14 +1,13 @@
 # Guia de Implementação: Como Atingir os 3 Níveis de Ancoragem Heckman
 
 **Para**: Utilizador
-**De**: Manus AI
-**Assunto**: Guia prático e passo a passo para implementar as recomendações de Heckman no seu projeto.
+**Assunto**: Guia prático e passo a passo para implementar as recomendações de Heckman no projeto.
 
 ---
 
 ## Visão Geral
 
-Para cada nível de ancoragem, aqui está exatamente o que você precisa fazer. As instruções estão divididas em **(A) Ações no Paper** (texto que você adiciona) e **(B) Ações no Código** (comandos para o Claude Code).
+Para cada nível de ancoragem, aqui está exatamente o que você precisa fazer. As instruções estão divididas em **(A) Ações no Paper** (texto que você adiciona) e **(B) Ações no Código**.
 
 ---
 
@@ -48,15 +47,7 @@ Nenhuma. Este nível é puramente narrativo.
 
 ### (B) Ação no Código
 
-Para garantir que você tem estes resultados, peça ao Claude Code para modificar o seu `main.py` (ou o script que orquestra tudo) para explicitamente chamar as funções `variance_decomposition` e `estimate_gates` e imprimir os resultados.
-
-**Comando para o Claude Code:**
-
-```
-Modifica o meu script principal para, após treinar o modelo DML final com o embedding 'Debiased GRU', fazer o seguinte:
-1. Chamar a função `variance_decomposition` do `validation.py`, passando os dados de treino (Y, T, X_embed), e imprimir o dicionário de resultados de forma legível.
-2. Chamar a função `estimate_gates` do `dml.py`, passando o DataFrame de covariáveis, e imprimir a tabela de resultados dos GATES.
-```
+Para garantir que você tem estes resultados, modifique o `main.py` para explicitamente chamar as funções `variance_decomposition` e `estimate_gates` e imprimir os resultados após treinar o modelo DML final com o embedding 'Debiased GRU'.
 
 ---
 
@@ -72,12 +63,10 @@ Na secção de **"Limitações e Pesquisa Futura"**, adicione o seguinte parágr
 
 ### (B) Ação no Código
 
-Esta é a parte mais importante. Peça ao Claude Code para modificar o ficheiro `src/dgp.py` para implementar o modelo de decisão racional. 
-
-**Comando para o Claude Code:**
+Esta é a parte mais importante. Modifique o ficheiro `src/dgp.py` para implementar o modelo de decisão racional.
 
 ```
-Abra o ficheiro `src/dgp.py` e execute as seguintes duas modificações:
+Execute as seguintes duas modificações no ficheiro `src/dgp.py`:
 
 1.  **Adicione um novo método** chamado `_calculate_expected_utility` à classe `SyntheticDGP`, logo antes do método `_assign_treatment`. O código para o novo método é:
 
