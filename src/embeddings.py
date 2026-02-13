@@ -1,13 +1,14 @@
 """
-CAREER-DML: Career Embeddings Module - v3.2
-Camada 2 - Três variantes de representação causal para sequências de carreira.
+CAREER-DML: Career Embeddings Module - v3.4
+Camada 2 - Four embedding variants for causal inference with career sequences.
 
-Variantes:
-    1. PredictiveGRU: Baseline preditivo (espera-se que falhe causalmente).
-    2. CausalGRU (VIB): Veitch et al. (2020) com Variational Information Bottleneck.
-    3. DebiasedGRU (Adversarial): Adversarial debiasing para purgar informação de tratamento.
+Variants:
+    1. PredictiveGRU: Outcome-only baseline (no causal adjustment).
+    2. CausalGRU (VIB): Veitch et al. (2020) with Variational Information Bottleneck.
+    3. DebiasedGRU (Adversarial): Adversarial debiasing to remove treatment signal.
+    4. TwoStageCausalGRU: Veitch-faithful two-stage approach (pre-train on Y, fine-tune with VIB+T).
 
-Referências:
+References:
     - Cho et al. (2014), Learning Phrase Representations using RNN Encoder-Decoder
     - Veitch, Sridhar, Blei (2020), Adapting Text Embeddings for Causal Inference
     - Vafa et al. (2025), Career Embeddings (PNAS)
@@ -138,7 +139,7 @@ class DebiasedGRU(nn.Module):
     about T. An adversary tries to predict T from the embedding; the encoder
     is penalized for the adversary's success.
 
-    This is the winning variant that achieves ATE = 0.6712 (bias: 0.1712, 34.2% error).
+    Uses gradient reversal to produce embeddings informative about Y but not T.
 
     Architecture:
         Embedding → GRU → Linear(phi_dim) → phi
@@ -352,3 +353,182 @@ def train_debiased_embedding(
             print(f"    Epoch {epoch+1}/{epochs} — Encoder Loss: {avg_loss:.4f}, Adv Loss: {loss_adv.item():.4f}")
 
     return losses
+
+
+# =============================================================================
+# VARIANTE 4: Two-Stage Causal GRU — Veitch-Faithful Implementation
+# =============================================================================
+
+class TwoStageCausalGRU(nn.Module):
+    """Two-stage GRU implementing Veitch et al. (2020) faithfully.
+
+    Stage 1: Pre-train GRU encoder on outcome prediction (like PredictiveGRU).
+    Stage 2: Freeze encoder, add VIB compression + dual heads (Y, T).
+
+    This mirrors the original Veitch approach of using pre-trained embeddings
+    (BERT in their case) followed by supervised dimensionality reduction,
+    rather than training the encoder and VIB jointly from scratch.
+
+    Architecture:
+        Stage 1: Embedding → GRU → Linear → Y (pre-training)
+        Stage 2: [frozen GRU] → VIB(mu, logvar) → phi
+                 phi → Linear → Y prediction
+                 phi → Linear → T prediction
+    """
+
+    def __init__(
+        self,
+        vocab_size: int = 50,
+        embedding_dim: int = 32,
+        hidden_dim: int = 64,
+        phi_dim: int = 16,
+    ):
+        super().__init__()
+        # Shared encoder (frozen after Stage 1)
+        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
+        self.gru = nn.GRU(embedding_dim, hidden_dim, batch_first=True)
+        self.fc_pretrain = nn.Linear(hidden_dim, 1)  # Stage 1 head
+
+        # VIB compression (Stage 2 only)
+        self.fc_mu = nn.Linear(hidden_dim, phi_dim)
+        self.fc_logvar = nn.Linear(hidden_dim, phi_dim)
+
+        # Dual prediction heads (Stage 2 only)
+        self.fc_y = nn.Linear(phi_dim, 1)
+        self.fc_t = nn.Linear(phi_dim, 1)
+
+        self.phi_dim = phi_dim
+        self.hidden_dim = hidden_dim
+        self._stage = 1  # Track current training stage
+
+    def _encode(self, x: torch.Tensor) -> torch.Tensor:
+        """Shared encoder: sequences → hidden state."""
+        emb = self.embedding(x)
+        _, h_n = self.gru(emb)
+        return h_n.squeeze(0)
+
+    def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor) -> torch.Tensor:
+        """Reparameterization trick for VIB."""
+        if self.training:
+            std = torch.exp(0.5 * logvar)
+            eps = torch.randn_like(std)
+            return mu + eps * std
+        return mu
+
+    def forward_stage1(self, x: torch.Tensor) -> torch.Tensor:
+        """Stage 1 forward: predict Y from raw hidden state."""
+        h = self._encode(x)
+        return self.fc_pretrain(h).squeeze(-1)
+
+    def forward_stage2(self, x: torch.Tensor) -> tuple:
+        """Stage 2 forward: VIB compression + dual heads."""
+        h = self._encode(x)
+        mu = self.fc_mu(h)
+        logvar = self.fc_logvar(h)
+        phi = self.reparameterize(mu, logvar)
+        y_pred = self.fc_y(phi).squeeze(-1)
+        t_pred = self.fc_t(phi).squeeze(-1)
+        return y_pred, t_pred, mu, logvar
+
+    def forward(self, x: torch.Tensor):
+        """Route to the appropriate stage."""
+        if self._stage == 1:
+            return self.forward_stage1(x)
+        return self.forward_stage2(x)
+
+    def freeze_encoder(self):
+        """Freeze the GRU encoder for Stage 2 fine-tuning."""
+        for param in self.embedding.parameters():
+            param.requires_grad = False
+        for param in self.gru.parameters():
+            param.requires_grad = False
+        for param in self.fc_pretrain.parameters():
+            param.requires_grad = False
+        self._stage = 2
+
+    def get_representation(self, x: torch.Tensor) -> torch.Tensor:
+        """Extract the VIB mean as the career embedding (deterministic)."""
+        h = self._encode(x)
+        return self.fc_mu(h)
+
+
+def train_twostage_causal_embedding(
+    model: TwoStageCausalGRU,
+    dataloader,
+    epochs_stage1: int = 10,
+    epochs_stage2: int = 10,
+    lr: float = 1e-3,
+    beta_vib: float = 0.01,
+    alpha_t: float = 0.5,
+) -> dict:
+    """Train the Two-Stage Causal GRU following Veitch et al. (2020).
+
+    Stage 1: Pre-train the GRU encoder to predict Y (outcome).
+             This learns good sequential representations before compression.
+    Stage 2: Freeze encoder. Train VIB + dual heads (Y, T).
+             This applies causal compression to pre-learned representations.
+
+    Returns:
+        dict with 'stage1_losses' and 'stage2_losses'.
+    """
+    results = {'stage1_losses': [], 'stage2_losses': []}
+
+    # --- Stage 1: Pre-train encoder on outcome prediction ---
+    print("  [Two-Stage] Stage 1: Pre-training encoder on outcome prediction...")
+    model._stage = 1
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+    model.train()
+    for epoch in range(epochs_stage1):
+        epoch_loss = 0.0
+        n_batches = 0
+        for sequences, treatments, outcomes in dataloader:
+            optimizer.zero_grad()
+            y_pred = model.forward_stage1(sequences)
+            loss = F.mse_loss(y_pred, outcomes)
+            loss.backward()
+            optimizer.step()
+            epoch_loss += loss.item()
+            n_batches += 1
+
+        avg_loss = epoch_loss / max(n_batches, 1)
+        results['stage1_losses'].append(avg_loss)
+        if (epoch + 1) % 5 == 0:
+            print(f"    Stage 1 Epoch {epoch+1}/{epochs_stage1} — Loss: {avg_loss:.4f}")
+
+    # --- Stage 2: Freeze encoder, train VIB + dual heads ---
+    print("  [Two-Stage] Stage 2: Freezing encoder, training VIB + dual heads...")
+    model.freeze_encoder()
+
+    # Only optimise Stage 2 parameters
+    stage2_params = list(model.fc_mu.parameters()) + \
+                    list(model.fc_logvar.parameters()) + \
+                    list(model.fc_y.parameters()) + \
+                    list(model.fc_t.parameters())
+    optimizer2 = torch.optim.Adam(stage2_params, lr=lr)
+
+    model.train()
+    for epoch in range(epochs_stage2):
+        epoch_loss = 0.0
+        n_batches = 0
+        for sequences, treatments, outcomes in dataloader:
+            optimizer2.zero_grad()
+            y_pred, t_pred, mu, logvar = model.forward_stage2(sequences)
+
+            loss_y = F.mse_loss(y_pred, outcomes)
+            loss_t = F.binary_cross_entropy_with_logits(t_pred, treatments.float())
+            kl_div = -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp())
+
+            loss = loss_y + alpha_t * loss_t + beta_vib * kl_div
+            loss.backward()
+            optimizer2.step()
+
+            epoch_loss += loss.item()
+            n_batches += 1
+
+        avg_loss = epoch_loss / max(n_batches, 1)
+        results['stage2_losses'].append(avg_loss)
+        if (epoch + 1) % 5 == 0:
+            print(f"    Stage 2 Epoch {epoch+1}/{epochs_stage2} — Loss: {avg_loss:.4f}")
+
+    return results

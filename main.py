@@ -1,5 +1,5 @@
 """
-CAREER-DML: Main Pipeline v3.3 (HECKMAN + INFERENCE + VIB SENSITIVITY)
+CAREER-DML: Main Pipeline v3.4 (VEITCH IMPROVEMENTS)
 Main orchestrator executing the full causal inference pipeline.
 
 Usage:
@@ -7,14 +7,16 @@ Usage:
 
 Flow:
     1. Generate data with DGP v3.3 (structural selection + exclusion restriction)
-    2. Train the 3 embedding variants
+    2. Train 4 embedding variants (including Two-Stage Causal GRU)
     3. Estimate ATE with DML for each variant (with SE, CI, p-values)
     4. Execute complete validation with Heckman interpretations
     5. Formal GATES heterogeneity test (Q1 vs Q5)
-    6. VIB sensitivity analysis (beta sweep)
-    7. Heckman two-step benchmark (with exclusion restriction)
-    8. Robustness test: structural vs. mechanical selection
-    9. Print complete report
+    6. Causal sufficiency test (Veitch, 2020)
+    7. Linear representation probing (Park et al., 2023)
+    8. VIB sensitivity analysis (beta sweep)
+    9. Heckman two-step benchmark (with exclusion restriction)
+   10. Robustness test: structural vs. mechanical selection
+   11. Print complete report
 
 References:
     - Heckman (1979), Sample Selection Bias as a Specification Error
@@ -22,6 +24,7 @@ References:
     - Chernozhukov et al. (2018), Double/Debiased ML
     - Veitch et al. (2020), Adapting Text Embeddings for Causal Inference
     - Wager & Athey (2018), Estimation and Inference of HTE using Random Forests
+    - Park et al. (2023), The Linear Representation Hypothesis (Veitch et al.)
     - Vafa et al. (2025), Career Embeddings (PNAS)
 """
 
@@ -34,7 +37,9 @@ from torch.utils.data import DataLoader, TensorDataset
 from src.dgp import SyntheticDGP
 from src.embeddings import (
     PredictiveGRU, CausalGRU, DebiasedGRU, Adversary,
-    train_predictive_embedding, train_causal_embedding, train_debiased_embedding,
+    TwoStageCausalGRU,
+    train_predictive_embedding, train_causal_embedding,
+    train_debiased_embedding, train_twostage_causal_embedding,
 )
 from src.dml import CausalDMLPipeline
 from src.validation import (
@@ -46,6 +51,8 @@ from src.validation import (
     robustness_structural_vs_mechanical,
     run_heckman_two_step_benchmark,
     vib_sensitivity_analysis,
+    test_causal_sufficiency,
+    probe_linear_representations,
 )
 
 
@@ -143,7 +150,11 @@ def main():
     Y = final["outcome"].values
     T = final["treatment"].values
     Z_peer = final["peer_adoption"].values  # Exclusion restriction
+    ability = final["ability"].values       # For probing
     true_ate = params["true_ate"]
+
+    # Raw covariates for causal sufficiency test
+    X_raw = final[["education", "ability"]].values
 
     print(f"  Treatment rate: {T.mean():.2%}")
     print(f"  Outcome mean (treated): {Y[T == 1].mean():.4f}")
@@ -151,9 +162,9 @@ def main():
     print(f"  Peer adoption mean: {Z_peer.mean():.4f}")
 
     # =========================================================================
-    # STEP 2: Train the 3 Embedding Variants
+    # STEP 2: Train 4 Embedding Variants
     # =========================================================================
-    print_header("STEP 2: Training the 3 Embedding Variants")
+    print_header("STEP 2: Training 4 Embedding Variants")
 
     # --- Variant 1: Predictive GRU ---
     print_subheader("Variant 1: Predictive GRU (Baseline)")
@@ -163,7 +174,7 @@ def main():
     print(f"  Embedding shape: {X_pred.shape}")
 
     # --- Variant 2: Causal GRU (VIB) ---
-    print_subheader("Variant 2: Causal GRU (VIB)")
+    print_subheader("Variant 2: Causal GRU (VIB) -- Single-stage")
     causal_model = CausalGRU(vocab_size=N_OCCUPATIONS, embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, phi_dim=PHI_DIM)
     train_causal_embedding(causal_model, loader, epochs=EPOCHS)
     X_causal = extract_embeddings(causal_model, sequences_tensor)
@@ -177,15 +188,29 @@ def main():
     X_debiased = extract_embeddings(debiased_model, sequences_tensor)
     print(f"  Embedding shape: {X_debiased.shape}")
 
+    # --- Variant 4: Two-Stage Causal GRU (Veitch-faithful) ---
+    print_subheader("Variant 4: Two-Stage Causal GRU (Veitch-faithful)")
+    twostage_model = TwoStageCausalGRU(
+        vocab_size=N_OCCUPATIONS, embedding_dim=EMBEDDING_DIM,
+        hidden_dim=HIDDEN_DIM, phi_dim=PHI_DIM,
+    )
+    train_twostage_causal_embedding(
+        twostage_model, loader,
+        epochs_stage1=EPOCHS, epochs_stage2=EPOCHS,
+    )
+    X_twostage = extract_embeddings(twostage_model, sequences_tensor)
+    print(f"  Embedding shape: {X_twostage.shape}")
+
     # =========================================================================
     # STEP 3: DML Estimation with Each Variant (with full inference)
     # =========================================================================
-    print_header("STEP 3: DML Estimation -- Comparison of 3 Variants (with Inference)")
+    print_header("STEP 3: DML Estimation -- Comparison of 4 Variants (with Inference)")
 
     variants = {
         "Predictive GRU": X_pred,
         "Causal GRU (VIB)": X_causal,
         "Debiased GRU (Adversarial)": X_debiased,
+        "Two-Stage Causal GRU": X_twostage,
     }
 
     results = {}
@@ -267,6 +292,7 @@ def main():
     # --- 4b-ii. Formal GATES Heterogeneity Test (Wager recommendation) ---
     print_subheader("4b-ii. Formal GATES Heterogeneity Test: H0: ATE(Q1) = ATE(Q5)")
     het_test = pipeline_best.test_gates_heterogeneity(gates_df)
+
     print(f"  Q1 mean CATE: {het_test['q1_mean']:.4f}")
     print(f"  Q5 mean CATE: {het_test['q5_mean']:.4f}")
     print(f"  Difference: {het_test['difference']:.4f}")
@@ -298,9 +324,46 @@ def main():
     print(f"  Status: {'PASSED' if passed else 'FAILED'}")
 
     # =========================================================================
-    # STEP 5: VIB Sensitivity Analysis (Veitch critique response)
+    # STEP 5: Causal Sufficiency Test (Veitch, 2020)
     # =========================================================================
-    print_header("STEP 5: VIB Sensitivity Analysis -- Beta Sweep (Veitch Critique)")
+    print_header("STEP 5: Causal Sufficiency Test (Veitch et al., 2020)")
+    print("  Testing whether embeddings capture all confounding information.")
+    print("  If ATE(Z) ≈ ATE(Z, X_raw), the embedding is causally sufficient.\n")
+
+    for name, X_embed in variants.items():
+        print_subheader(f"Sufficiency Test: {name}")
+        suff = test_causal_sufficiency(Y, T, X_embed, X_raw, true_ate)
+
+        print(f"  ATE (embedding only):     {suff['ate_embedding_only']:.4f} (SE: {suff['se_embedding_only']:.4f})")
+        print(f"  ATE (embedding + raw X):  {suff['ate_embedding_plus_raw']:.4f} (SE: {suff['se_embedding_plus_raw']:.4f})")
+        print(f"  Delta: {suff['delta']:.4f} (t = {suff['t_statistic']:.2f})")
+        print(f"  Bias (embedding only): {suff['bias_embedding_only']:.4f}")
+        print(f"  Bias (embedding + raw): {suff['bias_embedding_plus_raw']:.4f}")
+        print(f"  Assessment: {suff['assessment']}")
+        print(f"  Interpretation: {suff['interpretation']}")
+
+    # =========================================================================
+    # STEP 6: Linear Representation Probing (Veitch, 2023)
+    # =========================================================================
+    print_header("STEP 6: Linear Representation Probing (Park et al., 2023; Veitch)")
+    print("  Testing whether ability, treatment, and outcome are linearly")
+    print("  decodable from each embedding variant.\n")
+
+    for name, X_embed in variants.items():
+        print_subheader(f"Probing: {name}")
+        probe = probe_linear_representations(X_embed, ability, T, Y)
+
+        print(f"  Ability R²:          {probe['ability_r2']:.4f} (±{probe['ability_r2_std']:.4f})")
+        print(f"  Treatment Accuracy:  {probe['treatment_accuracy']:.4f} (±{probe['treatment_accuracy_std']:.4f})")
+        print(f"  Treatment Leakage:   {probe['treatment_leakage']:.4f} (0 = ideal)")
+        print(f"  Outcome R²:          {probe['outcome_r2']:.4f} (±{probe['outcome_r2_std']:.4f})")
+        print(f"  Profile: {probe['profile']}")
+        print(f"  Interpretation: {probe['interpretation']}")
+
+    # =========================================================================
+    # STEP 7: VIB Sensitivity Analysis (Veitch critique response)
+    # =========================================================================
+    print_header("STEP 7: VIB Sensitivity Analysis -- Beta Sweep (Veitch Critique)")
 
     vib_results = vib_sensitivity_analysis(
         model_class=CausalGRU,
@@ -326,18 +389,17 @@ def main():
     print(vib_results.to_string(index=False))
 
     # Compare with adversarial (no beta to tune)
-    print(f"\n  Adversarial Debiased (no beta): ATE = {best['ate']:.4f}, bias = {best['bias']:.4f} ({best['pct_error']:.1f}%)")
+    adv_r = results["Debiased GRU (Adversarial)"]
+    print(f"\n  Adversarial Debiased (no beta): ATE = {adv_r['ate']:.4f}, bias = {adv_r['bias']:.4f} ({adv_r['pct_error']:.1f}%)")
     print(f"  Lowest-error VIB beta: {vib_results.loc[vib_results['pct_error'].idxmin(), 'beta']:.4f}")
     print(f"  Lowest-error VIB ATE: {vib_results.loc[vib_results['pct_error'].idxmin(), 'ate']:.4f}")
-    print(f"  Conclusion: The adversarial approach is more robust than VIB because it")
-    print(f"  does not require tuning a compression parameter (beta). The VIB is")
-    print(f"  sensitive to beta, consistent with the observation in Veitch et al. (2020)")
+    print(f"  Conclusion: The VIB is sensitive to beta, consistent with the observation")
     print(f"  that the information bottleneck trade-off is non-trivial for sequential data.")
 
     # =========================================================================
-    # STEP 6: Heckman Two-Step Benchmark (with exclusion restriction)
+    # STEP 8: Heckman Two-Step Benchmark (with exclusion restriction)
     # =========================================================================
-    print_header("STEP 6: Benchmark -- Heckman Two-Step vs. DML (with Exclusion Restriction)")
+    print_header("STEP 8: Benchmark -- Heckman Two-Step vs. DML (with Exclusion Restriction)")
 
     # Run WITH exclusion restriction (fair comparison)
     heckman_bench = run_heckman_two_step_benchmark(Y, T, X_best, Z_exclusion=Z_peer)
@@ -356,8 +418,8 @@ def main():
 
     print(f"\n  Bias Comparison:")
     print(f"    Heckman Two-Step: |bias| = {bias_heckman:.4f}")
-    print(f"    DML + Debiased Embeddings: |bias| = {bias_dml:.4f}")
-    print(f"    DML improvement over Heckman: {improvement:.1f}%")
+    print(f"    DML + Embeddings: |bias| = {bias_dml:.4f}")
+    print(f"    DML bias reduction over Heckman: {improvement:.1f}%")
 
     # Also run WITHOUT exclusion restriction for comparison
     print_subheader("Comparison: Heckman WITHOUT exclusion restriction")
@@ -366,13 +428,13 @@ def main():
     print(f"  Heckman ATE (no exclusion): {heckman_no_excl['ate_heckman_two_step']:.4f}")
     print(f"  Heckman ATE (with exclusion): {heckman_bench['ate_heckman_two_step']:.4f}")
     print(f"  DML ATE: {best['ate']:.4f}")
-    print(f"  Note: The exclusion restriction {'improves' if bias_heckman_no_excl > bias_heckman else 'does not improve'} the Heckman estimate,")
+    print(f"  Note: The exclusion restriction {'reduces' if bias_heckman_no_excl > bias_heckman else 'does not reduce'} Heckman bias,")
     print(f"  DML with career embeddings {'yields lower bias' if bias_dml < bias_heckman else 'yields comparable bias'}.")
 
     # =========================================================================
-    # STEP 7: Structural vs. Mechanical Robustness Test
+    # STEP 9: Structural vs. Mechanical Robustness Test
     # =========================================================================
-    print_header("STEP 7: Robustness -- Structural vs. Mechanical Selection (Level 3 Heckman)")
+    print_header("STEP 9: Robustness -- Structural vs. Mechanical Selection (Level 3 Heckman)")
 
     robustness = robustness_structural_vs_mechanical(
         dml_pipeline=None,
@@ -393,7 +455,7 @@ def main():
     # =========================================================================
     # FINAL REPORT
     # =========================================================================
-    print_header("FINAL REPORT -- CAREER-DML v3.3 (HECKMAN + INFERENCE + VIB SENSITIVITY)")
+    print_header("FINAL REPORT -- CAREER-DML v3.4 (VEITCH IMPROVEMENTS)")
 
     print(f"""
   LEVEL 1 (Narrative): The DGP implements Heckman (1979) selection bias
@@ -412,18 +474,33 @@ def main():
   confirms results hold under both selection modes.
   -> Status: EXECUTED AND VALIDATED
 
-  INFERENCE (Wager recommendation): All ATE estimates now include standard
+  INFERENCE (Wager recommendation): All ATE estimates include standard
   errors, 95% confidence intervals, and p-values via ate_inference().
   GATES heterogeneity is formally tested with Welch's t-test.
   -> Status: IMPLEMENTED
 
-  VIB SENSITIVITY (Veitch critique): Beta sweep demonstrates that the
-  information bottleneck is sensitive to the compression parameter,
-  while adversarial debiasing is robust (no hyperparameter to tune).
+  VIB SENSITIVITY (Veitch critique): Beta sweep characterises the
+  information bottleneck sensitivity to the compression parameter.
   -> Status: CHARACTERISED
+
+  CAUSAL SUFFICIENCY (Veitch, 2020): Test whether ATE(Z) ≈ ATE(Z, X)
+  for each embedding variant. Measures whether the embedding captures
+  all confounding information or whether the DML compensates.
+  -> Status: TESTED FOR ALL 4 VARIANTS
+
+  LINEAR PROBING (Park et al., 2023; Veitch): Tests whether ability,
+  treatment, and outcome are linearly decodable from each embedding.
+  Connects to the linear representation hypothesis.
+  -> Status: PROBED FOR ALL 4 VARIANTS
+
+  TWO-STAGE CAUSAL GRU (Veitch-faithful): Implements the original
+  Veitch et al. (2020) approach faithfully: pre-train encoder on Y,
+  then fine-tune with VIB + dual heads (Y, T). Separates representation
+  learning from causal compression.
+  -> Status: IMPLEMENTED AND COMPARED
     """)
 
-    print_header("END OF PIPELINE v3.3")
+    print_header("END OF PIPELINE v3.4")
 
 
 if __name__ == "__main__":

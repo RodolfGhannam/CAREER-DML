@@ -48,11 +48,12 @@ To overcome the selection bias challenge, we employ a **Double/Debiased Machine 
 
 Where Y is the outcome (e.g., wage growth), T is the treatment (AI exposure), W are the confounders, and τ is the causal effect of interest. Our key innovation is that the confounder set W is not a set of hand-picked variables, but a low-dimensional **Career Embedding** learned from a worker's entire career history.
 
-We test three variants of these embeddings, following the theoretical framework of **Veitch, Sridhar, and Blei (2020)** [13], who demonstrated that text embeddings can be adapted for causal inference. We extend their approach from text to career sequences:
+We test four variants of these embeddings, following the theoretical framework of **Veitch, Sridhar, and Blei (2020)** [13], who demonstrated that text embeddings can be adapted for causal inference. We extend their approach from text to career sequences:
 
-1.  **Predictive GRU:** A standard Gated Recurrent Unit (**Cho et al., 2014**) [17] trained to predict the next job. This is our baseline, expected to be causally invalid.
+1.  **Predictive GRU:** A standard Gated Recurrent Unit (**Cho et al., 2014**) [17] trained to predict the outcome. This is our baseline, relying entirely on DML cross-fitting for confounding adjustment.
 2.  **Causal GRU (VIB):** A Variational Information Bottleneck is added to the GRU to penalize the mutual information between the embedding and the treatment, forcing it to learn a more generalized representation.
 3.  **Debiased GRU (Adversarial):** An adversarial head is added to the GRU, which tries to predict the treatment from the embedding. The main model is trained to produce embeddings that "fool" this adversary, thus purging the embedding of information related to treatment selection.
+4.  **Two-Stage Causal GRU (Veitch-faithful):** A faithful implementation of the two-stage procedure in Veitch et al. (2020): pre-train the GRU on outcome prediction, then freeze the encoder and train a VIB compression layer with dual prediction heads for both Y and T.
 
 To estimate heterogeneous treatment effects, we employ **Causal Forests** as developed by **Wager and Athey (2018)** [14], integrated within the DML framework via the `CausalForestDML` estimator. As a benchmark, we will also compare our results to the classic **Heckman Two-Step** selection model [10]. While the MVP was validated using a DML-only approach, the full project will use a DML-DiD specification as proposed by **Callaway and Sant'Anna (2021)** [8] once applied to the panel data from the Danish registers.
 
@@ -69,6 +70,7 @@ The table below shows the estimated Average Treatment Effect (ATE) for each embe
 | **Predictive GRU** | **0.5378** | **0.0520** | **[0.4358, 0.6397]** | **4.70e-25** | **+0.0378** | **7.6%** | Lowest bias |
 | Causal GRU (VIB) | 0.7996 | 0.0595 | [0.6830, 0.9162] | 3.59e-41 | +0.2996 | 59.9% | High bias |
 | Debiased GRU (Adversarial) | 0.5919 | 0.0563 | [0.4816, 0.7021] | 6.87e-26 | +0.0919 | 18.4% | Moderate bias |
+| Two-Stage Causal GRU | 0.6023 | 0.0615 | [0.4817, 0.7229] | 1.22e-22 | +0.1023 | 20.5% | Moderate bias |
 
 **Heterogeneity Analysis (GATES):**
 The Group Average Treatment Effects analysis reveals monotonically increasing effects by latent ability quintile, ranging from 0.5081 (Q1, lowest human capital) to 0.5661 (Q5, highest human capital), a gradient of 0.0579 (1.11x). A formal heterogeneity test rejects H₀: ATE(Q1) = ATE(Q5) with t = 62.27, p < 10⁻²⁰⁰, Cohen's d = 6.25. This pattern is consistent with skill-biased technological change theory and Cunha & Heckman's (2007) framework of skill complementarity.
@@ -80,7 +82,10 @@ The model passed all robustness checks: (1) placebo treatment tests (ATEs of -0.
 Compared to the classic Heckman Two-Step model — now properly identified with an exclusion restriction (`peer_adoption`) — the DML approach achieves a **93.0% reduction in bias** (Heckman ATE = 1.0413, bias = 0.5413 vs. DML ATE = 0.5378, bias = 0.0378). Importantly, the Heckman model was given every advantage: a valid exclusion restriction, a significant Inverse Mills Ratio (λ = -0.205), and correct parametric specification. Under these conditions, career embeddings yield a lower-bias correction for selection in this high-dimensional setting, suggesting their potential as a nonparametric alternative to the classical approach.
 
 **VIB Sensitivity Analysis:**
-A systematic sweep of the VIB compression parameter β ∈ {0.0001, 0.001, 0.01, 0.05, 0.1, 0.5, 1.0} reveals that the information bottleneck approach is sensitive to β across the entire range (38.9%–50.1% error), while the Predictive GRU (7.6%) and Adversarial (18.4%) approaches require no such tuning. This is consistent with the observation in Veitch et al. (2020) that the information bottleneck trade-off is non-trivial for sequential data, and suggests that adversarial debiasing may be a more practical approach for career sequence embeddings.
+A systematic sweep of the VIB compression parameter β ∈ {0.0001, 0.001, 0.01, 0.05, 0.1, 0.5, 1.0} reveals that the information bottleneck approach is sensitive to β across the entire range 41.2%--55.3% error), while the Predictive GRU (7.6%) and Adversarial (18.4%) approaches require no such tuning. This is consistent with the observation in Veitch et al. (2020) that the information bottleneck trade-off is non-trivial for sequential data, and suggests that adversarial debiasing may be a more practical approach for career sequence embeddings.
+
+**Causal Sufficiency and Linear Probing:**
+Following Veitch et al. (2020), we test whether each embedding is causally sufficient by comparing ATE(Z) vs. ATE(Z, X). Only the Predictive GRU approaches sufficiency (Delta = 0.047); the causal variants show Delta > 0.1, suggesting they discard confounding information. Linear representation probing (Park et al., 2023) reveals that none of the variants achieve the ideal causal profile (high ability R2, low treatment accuracy, high outcome R2), indicating that the DML cross-fitting -- rather than the embedding design -- is the primary mechanism for bias reduction in this setting.
 
 These results, obtained in our synthetic data laboratory with full statistical inference (standard errors, confidence intervals, and p-values), provide evidence that the proposed methodology is sound and can be applied to the Danish Register Data. The code, data, and figures are publicly available at [github.com/RodolfGhannam/CAREER-DML](https://github.com/RodolfGhannam/CAREER-DML).
 
