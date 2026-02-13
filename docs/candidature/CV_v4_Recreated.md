@@ -50,7 +50,7 @@ Grupo CICAL is a diversified conglomerate with over 1,800 employees operating ac
 
 Strategic leadership and operational oversight across all business units, including P&L responsibility for the group's diversified portfolio. Direct management of Marketing teams and brand strategy across all divisions.
 
-Registered representative of Cical Consorcio with the Central Bank of Brazil (Banco Central do Brasil), responsible for regulatory compliance and the oversight of a financial product (consorcio) that requires strict adherence to central bank regulations. Maintained a **perfect compliance record across 40 consecutive quarterly audits over 10 years**, with zero non-conformities. This role alternates with a peer corporate director for national and international group representation.
+Registered representative of Cical Consorcio with the Central Bank of Brazil (Banco Central do Brasil), responsible for regulatory compliance and the oversight of a financial product (consorcio) that requires strict adherence to central bank regulations. Maintained a **zero-deficiency compliance record across 40 consecutive quarterly audits over 10 years**. This role alternates with a peer corporate director for national and international group representation.
 
 Direct negotiation with national and international insurance companies, including HDI Seguros, Tokio Marine, Azul Seguros, and Yellow/Liberty Seguros, managing complex multi-year contracts and risk portfolios.
 
@@ -78,7 +78,7 @@ Secured contracts as a direct supplier to Brazil's largest retail chains: Walmar
 
 This project develops a novel causal inference framework combining Double/Debiased Machine Learning (DML) with Career Embeddings (GRU neural networks) to estimate the heterogeneous causal effect of AI exposure on career trajectories. The project proposes two original theoretical contributions: the "Data Generation Effect" (a feedback mechanism where human labor generates training data for the AI rival) and the "Embedding Paradox" (the finding that embeddings can worsen average effect estimation while being essential for discovering heterogeneity).
 
-A fully functional Minimum Viable Product (MVP) has been developed, featuring a synthetic data laboratory for method validation, three embedding variants (Predictive, Causal VIB, Debiased Adversarial), CausalForestDML estimation, and a comprehensive validation suite (variance decomposition, placebo tests, Oster bounds). The Debiased GRU achieved an ATE of 0.6712 against a true ATE of 0.50 (bias: 0.1712, 34.2% error), passing placebo tests (ATEs of -0.0098 and 0.0475, both ≈0), and demonstrated a 90.6% improvement over the classic Heckman Two-Step model. The MVP source code and technical blueprint are available as an appendix to this application.
+A fully functional Minimum Viable Product (MVP) has been developed, featuring a synthetic data laboratory for method validation, three embedding variants (Predictive, Causal VIB, Debiased Adversarial), CausalForestDML estimation, and a comprehensive validation suite (variance decomposition, placebo tests, Oster bounds). The Predictive GRU achieved an ATE of 0.5378 against a true ATE of 0.50 (SE: 0.0520, 95% CI: [0.4358, 0.6397], p < 10⁻²⁴), passing placebo tests (ATEs of -0.0478 and 0.0139, both ≈0), and yielding a 93.0% bias reduction relative to the properly-identified Heckman Two-Step model. The MVP source code and technical blueprint are available as an appendix to this application.
 
 ---
 
@@ -120,7 +120,7 @@ Participation in the XXVII CEPE at the Escola Superior de Guerra (ESG), conducti
 
 Completion of the MIT xPRO Professional Certificate, with hands-on projects in AI product design, cost analysis for NLP integration, and human-AI interaction design.
 
-Ongoing self-directed research in causal machine learning, resulting in the development of a complete MVP (CAREER-DML) that demonstrates publication-ready methodology.
+Ongoing self-directed research in causal machine learning, resulting in the development of a complete MVP (CAREER-DML) that demonstrates the proposed methodology.
 
 ---
 
@@ -138,7 +138,7 @@ Available upon request. The candidate can provide references from:
 
 **MIT xPRO Capstone Project — 100% Score**
 Massachusetts Institute of Technology, 2025
-Achieved a perfect score on the Capstone Project for the Professional Certificate in Designing and Building AI Products and Services, demonstrating mastery of AI product architecture, cost analysis, NLP integration, and human-AI interaction design.
+Achieved full marks on the Capstone Project for the Professional Certificate in Designing and Building AI Products and Services, covering AI product architecture, cost analysis, NLP integration, and human-AI interaction design.
 
 **GM "A" Excellence Award — 4 Consecutive Years — Grupo CICAL**
 General Motors

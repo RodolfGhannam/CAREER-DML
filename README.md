@@ -58,9 +58,9 @@ This repository implements a **Double/Debiased Machine Learning (DML)** pipeline
 
 | Variant | ATE | SE | 95% CI | p-value | Bias | % Error | Status |
 |:--------|:---:|:--:|:------:|:-------:|:----:|:-------:|:------:|
-| Predictive GRU | 0.5378 | 0.0520 | [0.4358, 0.6397] | 4.70e-25 | 0.0378 | 7.6% | **BEST** |
-| Causal GRU (VIB) | 0.7996 | 0.0595 | [0.6830, 0.9162] | 3.59e-41 | 0.2996 | 59.9% | FAIL |
-| Debiased GRU (Adversarial) | 0.5919 | 0.0563 | [0.4816, 0.7021] | 6.87e-26 | 0.0919 | 18.4% | OK |
+| Predictive GRU | 0.5378 | 0.0520 | [0.4358, 0.6397] | 4.70e-25 | 0.0378 | 7.6% | Lowest bias |
+| Causal GRU (VIB) | 0.7996 | 0.0595 | [0.6830, 0.9162] | 3.59e-41 | 0.2996 | 59.9% | High bias |
+| Debiased GRU (Adversarial) | 0.5919 | 0.0563 | [0.4816, 0.7021] | 6.87e-26 | 0.0919 | 18.4% | Moderate bias |
 
 > **True ATE = 0.5000** | All estimates include standard errors and confidence intervals via `CausalForestDML.ate_inference()` (Wager & Athey, 2018).
 
@@ -76,7 +76,7 @@ This repository implements a **Double/Debiased Machine Learning (DML)** pipeline
 | Q4 | 0.5491 | 0.0002 | [0.5486, 0.5496] | 199 |
 | Q5 (High Human Capital) | 0.5661 | 0.0007 | [0.5647, 0.5674] | 199 |
 
-> **Formal heterogeneity test:** H₀: ATE(Q1) = ATE(Q5) rejected with t = 62.27, p < 10⁻²⁰⁰, Cohen's d = 6.25. The monotonically increasing pattern confirms the skill-biased technological change hypothesis (Cunha & Heckman, 2007).
+> **Heterogeneity test:** H₀: ATE(Q1) = ATE(Q5) rejected with t = 62.27, p < 10⁻²⁰⁰, Cohen's d = 6.25. The monotonically increasing pattern is consistent with the skill-biased technological change hypothesis (Cunha & Heckman, 2007).
 
 ![GATES Heterogeneity](results/figures/fig2_gates_heterogeneity.png)
 
@@ -88,11 +88,11 @@ This repository implements a **Double/Debiased Machine Learning (DML)** pipeline
 | Heckman Two-Step (with excl.) | 1.0413 | 0.0370 | 0.5413 | peer_adoption |
 | Heckman Two-Step (no excl.) | 0.8780 | — | 0.3780 | None |
 
-> **DML reduces bias by 93.0% relative to the properly-identified Heckman model.** The Heckman benchmark uses `peer_adoption` as an exclusion restriction (affects treatment selection but not outcome), satisfying the identifying assumption of Heckman (1979). Even under these favourable conditions for the classical model, career embeddings provide a more robust correction for selection bias.
+> DML yields a 93.0% bias reduction relative to the properly-identified Heckman model. The Heckman benchmark uses `peer_adoption` as an exclusion restriction (affects treatment selection but not outcome), satisfying the identifying assumption of Heckman (1979). Under these conditions, career embeddings provide a lower-bias correction for selection in this high-dimensional setting.
 
 ![DML vs Heckman](results/figures/fig3_dml_vs_heckman.png)
 
-### VIB Sensitivity Analysis (Veitch Critique)
+### VIB Sensitivity Analysis
 
 | β | ATE | SE | Bias | % Error |
 |:-:|:---:|:--:|:----:|:-------:|
@@ -104,7 +104,7 @@ This repository implements a **Double/Debiased Machine Learning (DML)** pipeline
 | 0.5 | 0.7505 | 0.0579 | 0.2505 | 50.1% |
 | 1.0 | 0.6944 | 0.0499 | 0.1944 | 38.9% |
 
-> The VIB (Variational Information Bottleneck) approach is **sensitive to the β parameter** across the entire range tested (38.9%–50.1% error). In contrast, the Predictive GRU achieves 7.6% error and the Adversarial approach achieves 18.4% error — both without requiring a compression hyperparameter. This confirms the theoretical prediction of Veitch et al. (2020) that the information bottleneck trade-off is non-trivial for sequential data.
+> The VIB approach exhibits sensitivity to the β parameter across the range tested (38.9%–50.1% error). The Predictive GRU (7.6% error) and Adversarial approach (18.4% error) do not require this hyperparameter. This is consistent with the observation in Veitch et al. (2020) that the information bottleneck trade-off is non-trivial for sequential data.
 
 ![VIB Sensitivity](results/figures/fig4_vib_sensitivity.png)
 
@@ -115,7 +115,7 @@ This repository implements a **Double/Debiased Machine Learning (DML)** pipeline
 | Mechanical | 0.5920 | 0.0623 | [0.4698, 0.7142] | 0.0920 | 18.4% |
 | Structural (Heckman) | 0.6689 | 0.0700 | [0.5317, 0.8062] | 0.1689 | 33.8% |
 
-> **ROBUST:** |Δbias| = 0.0769 < 0.1. Results hold under both mechanical (probabilistic) and structural (rational decision) selection, confirming that the method is robust to the data-generating mechanism.
+> |Δbias| = 0.0769 < 0.1. Results hold under both mechanical (probabilistic) and structural (rational decision) selection, indicating that the method is not sensitive to the data-generating mechanism.
 
 ![Robustness Test](results/figures/fig5_robustness_test.png)
 
@@ -123,12 +123,12 @@ This repository implements a **Double/Debiased Machine Learning (DML)** pipeline
 
 | Test | Result | Threshold | Status |
 |:-----|:------:|:---------:|:------:|
-| Oster (2019) δ | 13.66 | > 2.0 | **ROBUST** |
-| Placebo (random T) | -0.0478 | ≈ 0 | **PASSED** |
-| Placebo (random Y) | 0.0139 | ≈ 0 | **PASSED** |
-| Structural vs. Mechanical | Δ = 0.077 | < 0.1 | **ROBUST** |
-| GATES monotonicity | Yes | — | **CONFIRMED** |
-| GATES Q1 ≠ Q5 | p < 10⁻²⁰⁰ | < 0.05 | **SIGNIFICANT** |
+| Oster (2019) δ | 13.66 | > 2.0 | Pass |
+| Placebo (random T) | -0.0478 | ≈ 0 | Pass |
+| Placebo (random Y) | 0.0139 | ≈ 0 | Pass |
+| Structural vs. Mechanical | Δ = 0.077 | < 0.1 | Pass |
+| GATES monotonicity | Yes | — | Pass |
+| GATES Q1 ≠ Q5 | p < 10⁻²⁰⁰ | < 0.05 | Pass |
 
 ---
 
@@ -142,7 +142,7 @@ This project integrates three foundational streams of econometric research:
 
 3. **Veitch, Sridhar & Blei (2020):** Three embedding variants operationalise different approaches to adapting text (career sequence) embeddings for causal inference: predictive sufficiency, variational information bottleneck, and adversarial debiasing.
 
-The pipeline demonstrates that **career sequence embeddings** — learned representations of occupational trajectories — can serve as a **nonparametric alternative** to the classical Inverse Mills Ratio for correcting selection bias in labour market studies.
+The pipeline evaluates whether career sequence embeddings can serve as a nonparametric alternative to the classical Inverse Mills Ratio for correcting selection bias in labour market studies.
 
 ---
 
@@ -160,7 +160,7 @@ pip install torch econml lightgbm scikit-learn scipy numpy pandas matplotlib
 python main.py
 ```
 
-The pipeline generates a complete output log in `results/output_v33.txt` and publication-quality figures in `results/figures/`.
+The pipeline generates a complete output log in `results/output_v33.txt` and figures in `results/figures/`.
 
 ---
 
@@ -203,9 +203,9 @@ This project uses **synthetic data** to validate the methodology under controlle
 
 1. **Synthetic DGP:** All results are generated from a synthetic Data Generating Process. While the DGP is designed to capture key features of real labour markets (Heckman selection, skill complementarity, career path dependence), the magnitudes and patterns may differ from real-world data. The primary contribution is methodological, not empirical.
 
-2. **VIB failure:** The Variational Information Bottleneck variant consistently underperforms across all β values tested. This may be because the compression-prediction trade-off is particularly challenging for sequential career data, where the relevant causal information is distributed across the entire sequence rather than concentrated in a few dimensions.
+2. **VIB underperformance:** The Variational Information Bottleneck variant consistently exhibits higher bias across all β values tested. This may be because the compression-prediction trade-off is particularly challenging for sequential career data, where the relevant causal information is distributed across the entire sequence rather than concentrated in a few dimensions.
 
-3. **Heckman benchmark:** The Heckman two-step estimator operates under conditions that are simultaneously favourable (proper exclusion restriction) and unfavourable (high-dimensional confounding). The 93.0% improvement should be interpreted as evidence that nonparametric methods handle high-dimensional selection better, not that the Heckman model is generally inferior.
+3. **Heckman benchmark:** The Heckman two-step estimator operates under conditions that are simultaneously favourable (proper exclusion restriction) and unfavourable (high-dimensional confounding). The 93.0% bias reduction should be interpreted in context: nonparametric methods may handle high-dimensional selection differently, and the comparison does not imply that the Heckman model is generally less appropriate.
 
 4. **Single seed:** Results are reported for a single random seed (42). A full Monte Carlo study across multiple seeds would strengthen the conclusions.
 

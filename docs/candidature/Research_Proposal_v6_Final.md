@@ -14,7 +14,7 @@ This project investigates the heterogeneous causal effects of Artificial Intelli
 
 To do so, we develop a novel causal inference framework combining **Double/Debiased Machine Learning (DML)** with **Career Embeddings** (GRU neural networks) to estimate these effects with high precision. This project directly addresses two of the department's key research priorities: **Competitive Dynamics** (#2) and **AI & Digital Transformation** (#10). The proposed supervisory team combines Prof. Tom Grad's expertise in rivalry dynamics and AI-driven competitive behavior with Prof. H.C. Kongsted's deep experience in applied econometrics and Danish register data on labor mobility [15]. The integration of causal reasoning into AI systems, as advocated by **Hünermund and Bareinboim (2024)** [16], further informs our methodological approach.
 
-We propose two original theoretical contributions: the **"Data Generation Effect,"** a feedback mechanism where human labor generates training data for its AI rival, and the **"Embedding Paradox,"** the finding that causally naive embeddings can worsen average effect estimation while being essential for discovering heterogeneity. A fully functional Minimum Viable Product (MVP) has been developed in a **synthetic data laboratory**, validating the core methodology and yielding promising preliminary results. The ultimate goal is to apply this validated framework to the unparalleled **Danish Register Data** to generate policy-relevant insights for the future of work.
+We propose two original theoretical contributions: the **"Data Generation Effect,"** a feedback mechanism where human labor generates training data for its AI rival, and the **"Embedding Paradox,"** the finding that causally naive embeddings can worsen average effect estimation while being essential for discovering heterogeneity. A fully functional Minimum Viable Product (MVP) has been developed in a **synthetic data laboratory**, validating the core methodology and yielding preliminary results. The goal is to apply this validated framework to the comprehensive **Danish Register Data** to generate policy-relevant insights for the future of work.
 
 ## 2. Literature Review and Positioning
 
@@ -24,9 +24,9 @@ The economic consequences of automation have been extensively studied, from the 
 
 The identification challenge at the core of this research is the selection bias formalized by **Heckman (1979)** [10]: workers who adopt AI are not randomly assigned; their latent ability affects both adoption and outcomes. **Cunha and Heckman (2007)** [11] extend this to the life-cycle formation of human capital, showing that early skill investments compound over time—a dynamic our Career Embeddings are designed to capture. The Danish register data offer a unique advantage for studying these dynamics. **Kongsted, Kaiser, and Rønde (2015)** [15], using precisely these registers, demonstrated that R&D labor mobility significantly increases innovation. Our project extends this line of inquiry by examining how AI exposure reshapes the patterns of labor mobility that Kongsted and colleagues have documented.
 
-Recent advances in representation learning for careers provide a powerful new tool. **Vafa et al. (2025)** [12] showed that embeddings trained on career sequences can predict occupational transitions with high accuracy. Our preliminary findings are consistent with theirs, but we go further by testing the *causal* validity of these representations, a critical step for policy analysis.
+Recent advances in representation learning for careers provide a new methodological approach. **Vafa et al. (2025)** [12] showed that embeddings trained on career sequences can predict occupational transitions with high accuracy. Our preliminary findings are consistent with theirs, but we go further by testing the *causal* validity of these representations, a critical step for policy analysis.
 
-Finally, we draw on the strategy literature on rivalry. **Grad, Riedl, and Kilduff (2025)** [1] show that rivalry can have powerful motivational effects, but can also backfire. We posit that AI acts as a new type of rival in the workplace, and understanding the conditions under which this rivalry is productive or destructive is a key goal of this research.
+Finally, we draw on the strategy literature on rivalry. **Grad, Riedl, and Kilduff (2025)** [1] show that rivalry can have significant motivational effects, but can also backfire. We posit that AI acts as a new type of rival in the workplace, and understanding the conditions under which this rivalry is productive or destructive is a key goal of this research.
 
 ## 3. Theoretical Framework: Human-Machine Rivalry and the Data Generation Effect
 
@@ -38,7 +38,7 @@ Our central theoretical argument is that the interaction between humans and AI i
 
 This effect implies that the returns to human experience may diminish or even become negative in AI-exposed roles, a sharp departure from traditional human capital models.
 
-**2. The Embedding Paradox:** This is a methodological finding with theoretical implications. We posit that while predictive embeddings (like those in Vafa et al., 2025) are excellent at capturing correlations, they can be actively harmful for estimating the *average* causal effect of AI exposure because they absorb the very confounding information we need to control for. However, these same embeddings are *essential* for uncovering *heterogeneous* effects, as they are a high-dimensional proxy for a worker's latent ability and career state. Resolving this paradox is the core technical challenge of the project.
+**2. The Embedding Paradox:** This is a methodological finding with theoretical implications. We posit that while predictive embeddings (like those in Vafa et al., 2025) are effective at capturing correlations, they can be actively harmful for estimating the *average* causal effect of AI exposure because they absorb the very confounding information we need to control for. However, these same embeddings are *essential* for uncovering *heterogeneous* effects, as they are a high-dimensional proxy for a worker's latent ability and career state. Resolving this paradox is the core technical challenge of the project.
 
 ## 4. Methodology: Causal Embeddings and Double/Debiased Machine Learning
 
@@ -58,7 +58,7 @@ To estimate heterogeneous treatment effects, we employ **Causal Forests** as dev
 
 ## 5. Preliminary Results from the Synthetic Data Laboratory
 
-To validate our methodology before applying it to the sensitive Danish data, we developed a **synthetic data laboratory**. This DGP simulates career trajectories for 1,000 individuals, incorporating confounding by latent ability and heterogeneous treatment effects. The results from this MVP provide strong proof-of-concept for our approach.
+To validate our methodology before applying it to the sensitive Danish data, we developed a **synthetic data laboratory**. This DGP simulates career trajectories for 1,000 individuals, incorporating confounding by latent ability and heterogeneous treatment effects. The results from this MVP provide a proof-of-concept for our approach.
 
 **Key Finding: Career embeddings provide a robust alternative to classical selection correction.**
 
@@ -66,9 +66,9 @@ The table below shows the estimated Average Treatment Effect (ATE) for each embe
 
 | Embedding Variant | ATE | SE | 95% CI | p-value | Bias | % Error | Status |
 |---|---|---|---|---|---|---|---|
-| **Predictive GRU** | **0.5378** | **0.0520** | **[0.4358, 0.6397]** | **4.70e-25** | **+0.0378** | **7.6%** | ✅ **Best** |
-| Causal GRU (VIB) | 0.7996 | 0.0595 | [0.6830, 0.9162] | 3.59e-41 | +0.2996 | 59.9% | ❌ Biased |
-| Debiased GRU (Adversarial) | 0.5919 | 0.0563 | [0.4816, 0.7021] | 6.87e-26 | +0.0919 | 18.4% | ⚠️ OK |
+| **Predictive GRU** | **0.5378** | **0.0520** | **[0.4358, 0.6397]** | **4.70e-25** | **+0.0378** | **7.6%** | Lowest bias |
+| Causal GRU (VIB) | 0.7996 | 0.0595 | [0.6830, 0.9162] | 3.59e-41 | +0.2996 | 59.9% | High bias |
+| Debiased GRU (Adversarial) | 0.5919 | 0.0563 | [0.4816, 0.7021] | 6.87e-26 | +0.0919 | 18.4% | Moderate bias |
 
 **Heterogeneity Analysis (GATES):**
 The Group Average Treatment Effects analysis reveals monotonically increasing effects by latent ability quintile, ranging from 0.5081 (Q1, lowest human capital) to 0.5661 (Q5, highest human capital), a gradient of 0.0579 (1.11x). A formal heterogeneity test rejects H₀: ATE(Q1) = ATE(Q5) with t = 62.27, p < 10⁻²⁰⁰, Cohen's d = 6.25. This pattern is consistent with skill-biased technological change theory and Cunha & Heckman's (2007) framework of skill complementarity.
@@ -77,16 +77,16 @@ The Group Average Treatment Effects analysis reveals monotonically increasing ef
 The model passed all robustness checks: (1) placebo treatment tests (ATEs of -0.0478 and 0.0139, both statistically indistinguishable from zero), (2) Oster (2019) sensitivity analysis (δ = 13.66 > 2, indicating robustness to unobservable confounding), and (3) robustness across selection mechanisms—the method performed consistently under both mechanical (18.4% bias) and structural Heckman-style selection (33.8% bias), with a bias difference of only 0.077.
 
 **Benchmark Comparison:**
-Compared to the classic Heckman Two-Step model — now properly identified with an exclusion restriction (`peer_adoption`) — the DML approach achieves a **93.0% reduction in bias** (Heckman ATE = 1.0413, bias = 0.5413 vs. DML ATE = 0.5378, bias = 0.0378). Importantly, the Heckman model was given every advantage: a valid exclusion restriction, a significant Inverse Mills Ratio (λ = -0.205), and correct parametric specification. Even under these favourable conditions, career embeddings provide a more robust correction for selection bias, demonstrating their value as a nonparametric alternative to the classical approach.
+Compared to the classic Heckman Two-Step model — now properly identified with an exclusion restriction (`peer_adoption`) — the DML approach achieves a **93.0% reduction in bias** (Heckman ATE = 1.0413, bias = 0.5413 vs. DML ATE = 0.5378, bias = 0.0378). Importantly, the Heckman model was given every advantage: a valid exclusion restriction, a significant Inverse Mills Ratio (λ = -0.205), and correct parametric specification. Under these conditions, career embeddings yield a lower-bias correction for selection in this high-dimensional setting, suggesting their potential as a nonparametric alternative to the classical approach.
 
-**VIB Sensitivity Analysis (Veitch Critique):**
-A systematic sweep of the VIB compression parameter β ∈ {0.0001, 0.001, 0.01, 0.05, 0.1, 0.5, 1.0} reveals that the information bottleneck approach is sensitive to β across the entire range (38.9%–50.1% error), while the Predictive GRU (7.6%) and Adversarial (18.4%) approaches require no such tuning. This confirms the theoretical prediction of Veitch et al. (2020) that the information bottleneck trade-off is non-trivial for sequential data, and suggests that adversarial debiasing is a more practical approach for career sequence embeddings.
+**VIB Sensitivity Analysis:**
+A systematic sweep of the VIB compression parameter β ∈ {0.0001, 0.001, 0.01, 0.05, 0.1, 0.5, 1.0} reveals that the information bottleneck approach is sensitive to β across the entire range (38.9%–50.1% error), while the Predictive GRU (7.6%) and Adversarial (18.4%) approaches require no such tuning. This is consistent with the observation in Veitch et al. (2020) that the information bottleneck trade-off is non-trivial for sequential data, and suggests that adversarial debiasing may be a more practical approach for career sequence embeddings.
 
-These results, obtained in our synthetic data laboratory with full statistical inference (standard errors, confidence intervals, and p-values), give us high confidence that the proposed methodology is sound and ready to be applied to the Danish Register Data. The code, data, and figures are publicly available at [github.com/RodolfGhannam/CAREER-DML](https://github.com/RodolfGhannam/CAREER-DML).
+These results, obtained in our synthetic data laboratory with full statistical inference (standard errors, confidence intervals, and p-values), provide evidence that the proposed methodology is sound and can be applied to the Danish Register Data. The code, data, and figures are publicly available at [github.com/RodolfGhannam/CAREER-DML](https://github.com/RodolfGhannam/CAREER-DML).
 
 ## 6. PhD Roadmap and Expected Contributions
 
-This project is designed as a three-paper dissertation, with a clear path to completion within the PhD timeline. My ongoing Master's dissertation at AGTU (expected Nov 2026) is directly aligned with Paper 1, ensuring I can begin this PhD with significant momentum.
+This project is designed as a three-paper dissertation, with a clear path to completion within the PhD timeline. My ongoing Master's dissertation at AGTU (expected Nov 2026) is directly aligned with Paper 1, ensuring continuity between the Master's and PhD work.
 
 | Paper | Title | Research Question | Status |
 |---|---|---|---|
@@ -97,7 +97,7 @@ This project is designed as a three-paper dissertation, with a clear path to com
 **Expected Contributions:**
 *   **Methodological:** A novel, validated framework for causal inference on career trajectories.
 *   **Theoretical:** The concepts of "Human-Machine Rivalry," "Data Generation Effect," and the "Embedding Paradox."
-*   **Empirical:** The first large-scale causal estimates of the heterogeneous effects of AI on careers using Danish register data.
+*   **Empirical:** Large-scale causal estimates of the heterogeneous effects of AI on careers using Danish register data.
 *   **Policy:** Actionable insights for education, retraining, and social insurance policies ("Flexicurity 2.0").
 
 ---

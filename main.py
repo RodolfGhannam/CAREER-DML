@@ -227,13 +227,13 @@ def main():
     print(f"  {'Variant':<30} {'ATE':<10} {'SE':<10} {'95% CI':<24} {'p-value':<12} {'Bias':<10} {'% Error':<10} {'Status'}")
     print(f"  {'-'*30} {'-'*10} {'-'*10} {'-'*24} {'-'*12} {'-'*10} {'-'*10} {'-'*10}")
     for name, r in results.items():
-        status = "BEST" if name == best_variant else ("FAIL" if r["pct_error"] > 100 else "OK")
+        status = "Lowest bias" if name == best_variant else ("High bias" if r["pct_error"] > 50 else "Moderate bias")
         ci_str = f"[{r['ci'][0]:.4f}, {r['ci'][1]:.4f}]"
         print(f"  {name:<30} {r['ate']:<10.4f} {r['se']:<10.4f} {ci_str:<24} {r['pvalue']:<12.4e} {r['bias']:<10.4f} {r['pct_error']:<10.1f} {status}")
-    print(f"\n  Best variant: {best_variant}")
+    print(f"\n  Lowest-bias variant: {best_variant}")
 
     # =========================================================================
-    # STEP 4: Complete Validation (Best Variant)
+    # STEP 4: Complete Validation (Lowest-Bias Variant)
     # =========================================================================
     print_header(f"STEP 4: Complete Validation -- {best_variant}")
 
@@ -327,11 +327,11 @@ def main():
 
     # Compare with adversarial (no beta to tune)
     print(f"\n  Adversarial Debiased (no beta): ATE = {best['ate']:.4f}, bias = {best['bias']:.4f} ({best['pct_error']:.1f}%)")
-    print(f"  Best VIB beta: {vib_results.loc[vib_results['pct_error'].idxmin(), 'beta']:.4f}")
-    print(f"  Best VIB ATE: {vib_results.loc[vib_results['pct_error'].idxmin(), 'ate']:.4f}")
+    print(f"  Lowest-error VIB beta: {vib_results.loc[vib_results['pct_error'].idxmin(), 'beta']:.4f}")
+    print(f"  Lowest-error VIB ATE: {vib_results.loc[vib_results['pct_error'].idxmin(), 'ate']:.4f}")
     print(f"  Conclusion: The adversarial approach is more robust than VIB because it")
     print(f"  does not require tuning a compression parameter (beta). The VIB is")
-    print(f"  sensitive to beta, confirming the theoretical prediction of Veitch et al. (2020)")
+    print(f"  sensitive to beta, consistent with the observation in Veitch et al. (2020)")
     print(f"  that the information bottleneck trade-off is non-trivial for sequential data.")
 
     # =========================================================================
@@ -367,7 +367,7 @@ def main():
     print(f"  Heckman ATE (with exclusion): {heckman_bench['ate_heckman_two_step']:.4f}")
     print(f"  DML ATE: {best['ate']:.4f}")
     print(f"  Note: The exclusion restriction {'improves' if bias_heckman_no_excl > bias_heckman else 'does not improve'} the Heckman estimate,")
-    print(f"  but DML with career embeddings remains {'superior' if bias_dml < bias_heckman else 'comparable'}.")
+    print(f"  DML with career embeddings {'yields lower bias' if bias_dml < bias_heckman else 'yields comparable bias'}.")
 
     # =========================================================================
     # STEP 7: Structural vs. Mechanical Robustness Test
