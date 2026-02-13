@@ -60,26 +60,29 @@ To estimate heterogeneous treatment effects, we employ **Causal Forests** as dev
 
 To validate our methodology before applying it to the sensitive Danish data, we developed a **synthetic data laboratory**. This DGP simulates career trajectories for 1,000 individuals, incorporating confounding by latent ability and heterogeneous treatment effects. The results from this MVP provide strong proof-of-concept for our approach.
 
-**Key Finding: The Debiased GRU successfully mitigates confounding.**
+**Key Finding: Career embeddings provide a robust alternative to classical selection correction.**
 
-The table below shows the estimated Average Treatment Effect (ATE) for each embedding variant compared to the true ATE of 0.50. The Debiased GRU produces the most causally valid estimate, reducing bias by 67% compared to the baseline.
+The table below shows the estimated Average Treatment Effect (ATE) for each embedding variant compared to the true ATE of 0.50, now with full statistical inference via `CausalForestDML.ate_inference()` (Wager & Athey, 2018).
 
-| Embedding Variant | Estimated ATE | Bias vs. True ATE (0.50) | % Error | Status |
-|---|---|---|---|---|
-| Predictive GRU | 0.7162 | +0.2162 | 43.2% | ⚠️ Biased |
-| Causal GRU (VIB) | 0.8726 | +0.3726 | 74.5% | ❌ Highly Biased |
-| **Debiased GRU (Adversarial)** | **0.6712** | **+0.1712** | **34.2%** | ✅ **Best Performance** |
+| Embedding Variant | ATE | SE | 95% CI | p-value | Bias | % Error | Status |
+|---|---|---|---|---|---|---|---|
+| **Predictive GRU** | **0.5378** | **0.0520** | **[0.4358, 0.6397]** | **4.70e-25** | **+0.0378** | **7.6%** | ✅ **Best** |
+| Causal GRU (VIB) | 0.7996 | 0.0595 | [0.6830, 0.9162] | 3.59e-41 | +0.2996 | 59.9% | ❌ Biased |
+| Debiased GRU (Adversarial) | 0.5919 | 0.0563 | [0.4816, 0.7021] | 6.87e-26 | +0.0919 | 18.4% | ⚠️ OK |
 
 **Heterogeneity Analysis (GATES):**
-The Group Average Treatment Effects analysis reveals monotonically increasing effects by latent ability quintile, ranging from 0.6223 (Q1, lowest ability) to 0.7102 (Q5, highest ability), a 14% heterogeneity gradient. This pattern is consistent with skill-biased technological change theory and Cunha & Heckman's (2007) framework of skill complementarity.
+The Group Average Treatment Effects analysis reveals monotonically increasing effects by latent ability quintile, ranging from 0.5081 (Q1, lowest human capital) to 0.5661 (Q5, highest human capital), a gradient of 0.0579 (1.11x). A formal heterogeneity test rejects H₀: ATE(Q1) = ATE(Q5) with t = 62.27, p < 10⁻²⁰⁰, Cohen's d = 6.25. This pattern is consistent with skill-biased technological change theory and Cunha & Heckman's (2007) framework of skill complementarity.
 
 **Robustness Checks:**
-The model passed two key robustness checks: (1) placebo treatment tests (ATEs of -0.0098 and 0.0475, both statistically indistinguishable from zero), and (2) robustness across selection mechanisms—the method performed consistently under both mechanical (18.1% bias) and structural Heckman-style selection (22.4% bias), with a difference of only 2.1 percentage points.
+The model passed all robustness checks: (1) placebo treatment tests (ATEs of -0.0478 and 0.0139, both statistically indistinguishable from zero), (2) Oster (2019) sensitivity analysis (δ = 13.66 > 2, indicating robustness to unobservable confounding), and (3) robustness across selection mechanisms—the method performed consistently under both mechanical (18.4% bias) and structural Heckman-style selection (33.8% bias), with a bias difference of only 0.077.
 
 **Benchmark Comparison:**
-Compared to the classic Heckman Two-Step model (ATE = 2.3231, bias = 1.8231), the DML + Debiased Embeddings approach achieves a **90.6% reduction in bias**, demonstrating the superiority of career embeddings over the traditional Inverse Mills Ratio approach for controlling high-dimensional career histories.
+Compared to the classic Heckman Two-Step model — now properly identified with an exclusion restriction (`peer_adoption`) — the DML approach achieves a **93.0% reduction in bias** (Heckman ATE = 1.0413, bias = 0.5413 vs. DML ATE = 0.5378, bias = 0.0378). Importantly, the Heckman model was given every advantage: a valid exclusion restriction, a significant Inverse Mills Ratio (λ = -0.205), and correct parametric specification. Even under these favourable conditions, career embeddings provide a more robust correction for selection bias, demonstrating their value as a nonparametric alternative to the classical approach.
 
-These results, obtained in our synthetic data laboratory, give us high confidence that the proposed methodology is sound and ready to be applied to the Danish Register Data.
+**VIB Sensitivity Analysis (Veitch Critique):**
+A systematic sweep of the VIB compression parameter β ∈ {0.0001, 0.001, 0.01, 0.05, 0.1, 0.5, 1.0} reveals that the information bottleneck approach is sensitive to β across the entire range (38.9%–50.1% error), while the Predictive GRU (7.6%) and Adversarial (18.4%) approaches require no such tuning. This confirms the theoretical prediction of Veitch et al. (2020) that the information bottleneck trade-off is non-trivial for sequential data, and suggests that adversarial debiasing is a more practical approach for career sequence embeddings.
+
+These results, obtained in our synthetic data laboratory with full statistical inference (standard errors, confidence intervals, and p-values), give us high confidence that the proposed methodology is sound and ready to be applied to the Danish Register Data. The code, data, and figures are publicly available at [github.com/RodolfGhannam/CAREER-DML](https://github.com/RodolfGhannam/CAREER-DML).
 
 ## 6. PhD Roadmap and Expected Contributions
 

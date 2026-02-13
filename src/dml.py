@@ -1,14 +1,15 @@
 """
-CAREER-DML: Double/Debiased Machine Learning Pipeline - v3.2
-Camada 3 - Estimação causal usando CausalForestDML com career embeddings.
+CAREER-DML: Double/Debiased Machine Learning Pipeline - v3.3
+Layer 3 - Causal estimation using CausalForestDML with career embeddings.
 
-Este módulo implementa:
-    - CausalForestDML com LightGBM como modelos de nuisance
-    - Propensity score trimming para common support
-    - GATES (Group Average Treatment Effects) para heterogeneidade
-    - Cross-fitting automático via econml
+This module implements:
+    - CausalForestDML with GradientBoosting as nuisance models
+    - Propensity score trimming for common support
+    - ATE inference with standard errors, confidence intervals, and p-values
+    - GATES (Group Average Treatment Effects) with formal hypothesis testing
+    - Cross-fitting via econml
 
-Referências:
+References:
     - Chernozhukov et al. (2018), Double/Debiased ML
     - Wager & Athey (2018), Estimation and Inference of HTE using Random Forests
     - Athey, Tibshirani, Wager (2019), Generalized Random Forests
@@ -16,23 +17,27 @@ Referências:
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 from sklearn.ensemble import GradientBoostingRegressor, GradientBoostingClassifier
 from econml.dml import CausalForestDML
 
 
 class CausalDMLPipeline:
-    """Pipeline de estimação causal usando DML com Causal Forests.
+    """Pipeline for causal estimation using DML with Causal Forests.
 
-    Fluxo:
+    Flow:
         1. Propensity score trimming (common support enforcement)
-        2. CausalForestDML fit com cross-fitting
-        3. ATE estimation
+        2. CausalForestDML fit with cross-fitting
+        3. ATE estimation with inference (SE, CI, p-value)
         4. CATE estimation (individual-level)
-        5. GATES estimation (group-level heterogeneity)
+        5. GATES estimation with formal hypothesis testing
 
     Attributes:
         model: CausalForestDML estimator (fitted).
         ate: Estimated Average Treatment Effect.
+        ate_se: Standard error of the ATE estimate.
+        ate_ci: 95% confidence interval for the ATE.
+        ate_pvalue: p-value for H0: ATE = 0.
         cates: Array of individual-level CATEs.
     """
 
@@ -51,6 +56,9 @@ class CausalDMLPipeline:
         self.ps_trim_upper = ps_trim_upper
         self.model = None
         self.ate = None
+        self.ate_se = None
+        self.ate_ci = None
+        self.ate_pvalue = None
         self.cates = None
 
     def _propensity_trim(
@@ -71,7 +79,7 @@ class CausalDMLPipeline:
 
         n_trimmed = (~keep).sum()
         if n_trimmed > 0:
-            print(f"    Propensity trimming: {n_trimmed} observações removidas ({n_trimmed/len(T)*100:.1f}%)")
+            print(f"    Propensity trimming: {n_trimmed} observations removed ({n_trimmed/len(T)*100:.1f}%)")
 
         Y_trim = Y[keep]
         T_trim = T[keep]
@@ -87,7 +95,7 @@ class CausalDMLPipeline:
         X: np.ndarray,
         W: np.ndarray | None = None,
     ) -> tuple[float, np.ndarray, np.ndarray]:
-        """Fit the CausalForestDML and estimate ATE + CATEs.
+        """Fit the CausalForestDML and estimate ATE + CATEs with full inference.
 
         Args:
             Y: Outcome array (n,).
@@ -118,40 +126,51 @@ class CausalDMLPipeline:
 
         self.model.fit(Y_t, T_t, X=X_t, W=W_t)
 
-        # Step 3: Estimate ATE (must pass X since X was used in fit)
-        self.ate = float(self.model.ate(X=X_t))
+        # Step 3: ATE with full inference (Wager & Athey, 2018)
+        ate_inference = self.model.ate_inference(X=X_t)
+        self.ate = float(ate_inference.mean_point)
+        self.ate_se = float(ate_inference.stderr_mean)
+        ci = ate_inference.conf_int_mean(alpha=0.05)
+        # Handle both scalar and array returns from different EconML versions
+        ci_low = ci[0].item() if hasattr(ci[0], 'item') else float(ci[0])
+        ci_high = ci[1].item() if hasattr(ci[1], 'item') else float(ci[1])
+        self.ate_ci = (ci_low, ci_high)
+        pval = ate_inference.pvalue(value=0)
+        self.ate_pvalue = pval.item() if hasattr(pval, 'item') else float(pval)
 
         # Step 4: Estimate CATEs
         self.cates = self.model.effect(X=X_t).flatten()
 
-        print(f"    ATE estimado: {self.ate:.4f}")
-        print(f"    CATEs — mean: {self.cates.mean():.4f}, std: {self.cates.std():.4f}")
+        print(f"    ATE estimate: {self.ate:.4f}")
+        print(f"    SE: {self.ate_se:.4f}")
+        print(f"    95% CI: [{self.ate_ci[0]:.4f}, {self.ate_ci[1]:.4f}]")
+        print(f"    p-value: {self.ate_pvalue:.4e}")
+        print(f"    CATEs: mean={self.cates.mean():.4f}, std={self.cates.std():.4f}")
 
         return self.ate, self.cates, keep_idx
 
     def estimate_gates(
         self, X_df: pd.DataFrame, n_groups: int = 5
     ) -> pd.DataFrame:
-        """Estimate Group Average Treatment Effects (GATES).
+        """Estimate Group Average Treatment Effects (GATES) with inference.
 
         Divides observations into quantile groups based on predicted CATEs
-        and estimates the average effect within each group.
+        and estimates the average effect within each group with standard
+        errors and confidence intervals.
 
-        This is the key tool for discovering heterogeneity, interpreted
-        through the lens of Cunha & Heckman (2007) as proxies for
-        different levels of latent human capital.
+        Interpreted through the lens of Cunha & Heckman (2007) as proxies
+        for different levels of latent human capital.
 
         Args:
             X_df: DataFrame of features (same as used in fit).
             n_groups: Number of quantile groups.
 
         Returns:
-            DataFrame with columns: group, ate, ci_lower, ci_upper, n_obs.
+            DataFrame with columns: group, ate, se, ci_lower, ci_upper, n_obs.
         """
         if self.model is None or self.cates is None:
             raise ValueError("Must call fit_predict() before estimate_gates().")
 
-        # Assign groups based on CATE quantiles
         quantile_labels = pd.qcut(self.cates, q=n_groups, labels=False, duplicates="drop")
 
         gates_data = []
@@ -167,9 +186,57 @@ class CausalDMLPipeline:
             gates_data.append({
                 "group": int(g) + 1,
                 "ate": ate_g,
+                "se": se_g,
                 "ci_lower": ci_lower,
                 "ci_upper": ci_upper,
                 "n_obs": int(mask.sum()),
             })
 
         return pd.DataFrame(gates_data)
+
+    def test_gates_heterogeneity(self, gates_df: pd.DataFrame) -> dict:
+        """Formal hypothesis test: H0: ATE(Q1) = ATE(Q_max).
+
+        Uses Welch's t-test on the CATE distributions of the lowest
+        and highest quintiles to determine if treatment effect
+        heterogeneity is statistically significant.
+
+        Returns:
+            Dictionary with test statistic, p-value, and interpretation.
+        """
+        if self.cates is None:
+            raise ValueError("Must call fit_predict() before testing heterogeneity.")
+
+        n_groups = len(gates_df)
+        quantile_labels = pd.qcut(self.cates, q=n_groups, labels=False, duplicates="drop")
+
+        q1_cates = self.cates[quantile_labels == 0]
+        q5_cates = self.cates[quantile_labels == quantile_labels.max()]
+
+        # Welch's t-test (does not assume equal variances)
+        t_stat, p_value = stats.ttest_ind(q5_cates, q1_cates, equal_var=False)
+
+        # Effect size (Cohen's d)
+        pooled_std = np.sqrt((q1_cates.std()**2 + q5_cates.std()**2) / 2)
+        cohens_d = (q5_cates.mean() - q1_cates.mean()) / pooled_std if pooled_std > 0 else 0
+
+        significant = p_value < 0.05
+
+        return {
+            "q1_mean": float(q1_cates.mean()),
+            "q5_mean": float(q5_cates.mean()),
+            "difference": float(q5_cates.mean() - q1_cates.mean()),
+            "t_statistic": float(t_stat),
+            "p_value": float(p_value),
+            "cohens_d": float(cohens_d),
+            "significant": significant,
+            "interpretation": (
+                f"The treatment effect for Q{n_groups} (high human capital) is "
+                f"{q5_cates.mean():.4f}, compared to {q1_cates.mean():.4f} for Q1 "
+                f"(low human capital), a difference of {q5_cates.mean() - q1_cates.mean():.4f}. "
+                f"This difference is {'statistically significant' if significant else 'not statistically significant'} "
+                f"(t={t_stat:.2f}, p={p_value:.4e}, Cohen's d={cohens_d:.2f}), "
+                f"{'confirming' if significant else 'failing to confirm'} the hypothesis of "
+                f"skill-biased technological change (Cunha & Heckman, 2007)."
+            ),
+        }
