@@ -4,24 +4,6 @@ All notable changes to CAREER-DML are documented in this file. This project foll
 
 ## [3.3] - 2026-02-13
 
-## [3.4] - 2025-02-13
-
-### Added
-- **Two-Stage Causal GRU** (Variant 4): Faithful implementation of Veitch et al. (2020) two-stage procedure
-- **Causal Sufficiency Test**: Compares ATE(Z) vs. ATE(Z, X) for each embedding variant
-- **Linear Representation Probing**: Tests whether ability, treatment, and outcome are linearly decodable from embeddings
-- **Theoretical Framework** section in README: Formal description of each variant's assumptions and the causal DAG
-- **Fig. 6**: Causal Sufficiency Test visualization
-- **Fig. 7**: Linear Representation Probing (3-panel: ability, treatment leakage, outcome)
-- **FAQ** section in README: 5 anticipated questions with factual answers
-
-### Changed
-- Pipeline now trains and evaluates 4 embedding variants (was 3)
-- Results table expanded to include Two-Stage Causal GRU
-- Research Proposal updated with 4 variants, causal sufficiency, and linear probing findings
-- CV updated to reflect 4 embedding variants
-- VIB sensitivity range updated to 41.2%-55.3% (was 38.9%-50.1%)
-
 ### Added
 - Statistical inference for all ATE estimates: standard errors, 95% confidence intervals, and p-values via `CausalForestDML.ate_inference()` (Wager & Athey, 2018)
 - Formal GATES heterogeneity test: Welch's t-test for Q1 vs Q5 with Cohen's d effect size

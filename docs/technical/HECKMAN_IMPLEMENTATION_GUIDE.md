@@ -1,102 +1,65 @@
-# Guia de Implementação: Como Atingir os 3 Níveis de Ancoragem Heckman
+# Heckman Integration Guide — CAREER-DML v3.4
 
-**Para**: Utilizador
-**Assunto**: Guia prático e passo a passo para implementar as recomendações de Heckman no projeto.
-
----
-
-## Visão Geral
-
-Para cada nível de ancoragem, aqui está exatamente o que você precisa fazer. As instruções estão divididas em **(A) Ações no Paper** (texto que você adiciona) e **(B) Ações no Código**.
+**Subject**: Documentation of the three levels of Heckman integration implemented in the CAREER-DML pipeline.
 
 ---
 
-## Nível 1: Ancoragem Narrativa (Obrigatório, Baixo Esforço)
+## Overview
 
-**Objetivo**: Enquadrar o que você **já fez** na linguagem teórica de Heckman.
-
-### (A) Ação no Paper
-
-Na secção de **Metodologia** do seu paper, onde você descreve o DGP, adicione o seguinte texto. Isto mostra que o design do seu DGP foi intencional e baseado em teoria económica.
-
-```text
-O design do nosso Processo Gerador de Dados (DGP) é intencionalmente construído sobre os fundamentos da econometria laboral. Especificamente, a nossa variável latente `ability` que influencia tanto a seleção para o tratamento (`T`) quanto o resultado (`Y`) é uma implementação direta do problema de viés de seleção formalizado por Heckman (1979). Ao fazer isto, criamos um desafio realista onde métodos de correlação simples, como embeddings preditivos, produzem estimativas enviesadas.
-
-Adicionalmente, a forma como `ability` modula o efeito do tratamento (CATE) e as transições de carreira inspira-se no trabalho sobre formação de capital humano e dinâmica de competências de Cunha & Heckman (2007). Os nossos *career embeddings* podem, portanto, ser vistos como uma tentativa de capturar, de forma não-paramétrica, a manifestação deste capital humano latente ao longo da trajetória profissional de um indivíduo.
-```
-
-### (B) Ação no Código
-
-Nenhuma. Este nível é puramente narrativo.
+The CAREER-DML v3.4 pipeline integrates Heckman's work at three levels of depth. All three levels are fully implemented in the codebase. This document describes each level and maps it to the corresponding code.
 
 ---
 
-## Nível 2: Ancoragem Interpretativa (Recomendado, Médio Esforço)
+## Level 1: DGP Design (Structural Selection + Exclusion Restriction)
 
-**Objetivo**: Usar os resultados que você **já gera** para responder a questões teóricas de Heckman.
+**Objective**: The Data Generating Process is built on Heckman's principles.
 
-### (A) Ação no Paper
+**Implementation** (`src/dgp.py`):
 
-1.  **Na análise da Variance Decomposition**: Depois de apresentar a tabela com os valores, adicione a seguinte interpretação:
+The latent variable `ability` influences both treatment selection (T) and the outcome (Y), creating endogenous selection bias. The DGP includes a proper exclusion restriction (`peer_adoption`) that affects treatment selection but not the outcome, satisfying the identifying assumption of Heckman (1979). Treatment assignment follows a rational decision model where agents adopt AI if the expected utility gain (higher wages minus adaptation costs) is positive. Adaptation costs are inversely proportional to `ability`, creating structural endogeneity consistent with Heckman's framework.
 
-    > "É de notar que a componente `common_support_penalty` da variância, que dominou a incerteza total, pode ser interpretada como uma **medida quantitativa da severidade do problema de seleção de Heckman** nos nossos dados. Um valor elevado indica uma sobreposição fraca entre os grupos de tratamento e controlo devido ao confounding por `ability`, tornando a inferência causal mais desafiadora e destacando a necessidade de métodos robustos como o DML."
-
-2.  **Na análise dos GATES**: Ao mostrar a tabela com os efeitos por quantil, adicione:
-
-    > "A análise de GATES revela uma forte heterogeneidade no efeito do tratamento, consistente com a teoria de **complementaridade capital-competência (Heckman, 2007)**. O retorno da exposição à IA é significativamente maior para indivíduos no quantil superior de CATEs (ATE = [valor do Q5]), que serve como proxy para um maior nível de capital humano latente."
-
-### (B) Ação no Código
-
-Para garantir que você tem estes resultados, modifique o `main.py` para explicitamente chamar as funções `variance_decomposition` e `estimate_gates` e imprimir os resultados após treinar o modelo DML final com o embedding 'Debiased GRU'.
+**Key code references**:
+- `SyntheticDGP._calculate_expected_utility()` — rational decision model
+- `SyntheticDGP._assign_treatment()` — structural selection with exclusion restriction
+- `SyntheticDGP._generate_exclusion_restriction()` — peer adoption instrument
 
 ---
 
-## Nível 3: Ancoragem Estrutural (Avançado, Alto Impacto)
+## Level 2: Interpretive Anchoring (Validation Suite)
 
-**Objetivo**: Abordar a crítica mais profunda de Heckman, transformando o seu modelo de seleção de "reduzido" para (minimamente) "estrutural".
+**Objective**: Results are interpreted through Heckman's theoretical lens.
 
-### (A) Ação no Paper
+**Implementation** (`src/validation.py`):
 
-Na secção de **"Limitações e Pesquisa Futura"**, adicione o seguinte parágrafo:
+The validation suite connects empirical results to Heckman's theory at two points. First, the variance decomposition interprets the `common_support_penalty` as a quantitative measure of the severity of Heckman's selection bias. Second, the GATES analysis interprets treatment effect heterogeneity through the lens of Cunha & Heckman's (2007) skill-capital complementarity: individuals with higher latent human capital benefit more from AI exposure (Q1: 0.5081 to Q5: 0.5661, t = 62.27, p < 10⁻²⁰⁰).
 
-> "Uma limitação do nosso DGP atual é que a seleção para o tratamento, embora dependente de `ability`, segue um modelo de forma reduzida. Para endereçar a crítica de Heckman sobre modelos estruturais, desenvolvemos uma versão alternativa do DGP (v3.2) onde a seleção para o tratamento resulta de um **modelo de decisão racional**. Neste modelo, os agentes escolhem o tratamento se este maximizar a sua utilidade esperada, considerando os benefícios salariais e os custos de adaptação. Verificámos que os nossos resultados principais se mantêm, sugerindo que o método de embeddings debiased é robusto sob esta forma de seleção estrutural. Um passo natural para pesquisa futura seria integrar estes embeddings dentro de um modelo dinâmico de otimização de ciclo de vida completo."
+The Heckman Two-Step benchmark is run with and without the exclusion restriction, providing a fair comparison. The DML pipeline achieves a 93.0% bias reduction relative to the properly-identified Heckman model (ATE: 0.5378 vs. 1.0413).
 
-### (B) Ação no Código
+**Key code references**:
+- `interpret_variance_heckman()` — selection bias severity
+- `interpret_gates_heckman()` — skill-capital complementarity
+- `run_heckman_two_step_benchmark()` — with/without exclusion restriction
 
-Esta é a parte mais importante. Modifique o ficheiro `src/dgp.py` para implementar o modelo de decisão racional.
+---
 
-```
-Execute as seguintes duas modificações no ficheiro `src/dgp.py`:
+## Level 3: Structural Robustness
 
-1.  **Adicione um novo método** chamado `_calculate_expected_utility` à classe `SyntheticDGP`, logo antes do método `_assign_treatment`. O código para o novo método é:
+**Objective**: Test whether results hold under different selection mechanisms.
 
-    ```python
-    def _calculate_expected_utility(self, ability, education):
-        # Agente faz uma previsão simplista do futuro
-        expected_wage_no_ai = 1.5 + 0.8 * education + self.gamma_a * ability
-        expected_wage_with_ai = expected_wage_no_ai + self.true_ate + self.delta_a * ability
-        
-        # Custo do esforço para se adaptar à IA (menor para quem tem mais ability)
-        cost_of_effort = max(0, 2.0 - 1.5 * ability)
-        
-        utility_no_ai = expected_wage_no_ai
-        utility_with_ai = expected_wage_with_ai - cost_of_effort
-        return utility_no_ai, utility_with_ai
-    ```
+**Implementation** (`src/validation.py` + `src/dgp.py`):
 
-2.  **Substitua completamente** o método `_assign_treatment` existente pelo seguinte código novo, que chama a função que acabámos de criar:
+The pipeline generates data under two selection mechanisms: mechanical (probabilistic assignment based on covariates) and structural (rational decision model where agents weigh expected utility). The bias difference between the two mechanisms is 0.077, below the pre-specified threshold of 0.1, indicating that the DML pipeline is not sensitive to the data-generating mechanism.
 
-    ```python
-    def _assign_treatment(self, ability: float, education: int) -> int:
-        """v3.2 - Atribui tratamento com base num modelo de decisão racional (Heckman-style)."""
-        utility_no_ai, utility_with_ai = self._calculate_expected_utility(ability, education)
-        
-        # Agente escolhe o tratamento se a utilidade for maior, com algum ruído
-        prob_treatment = expit((utility_with_ai - utility_no_ai) * 2.0)
-        return np.random.binomial(1, prob_treatment)
-    ```
+**Key code references**:
+- `run_robustness_test()` — structural vs. mechanical comparison
+- `SyntheticDGP(selection_type='mechanical')` — probabilistic selection
+- `SyntheticDGP(selection_type='structural')` — rational decision selection
 
-Depois de fazer estas modificações, execute novamente o pipeline principal para confirmar que os resultados se mantêm robustos.
-```
+---
 
-Ao seguir estes 3 passos, você terá um projeto que não só é tecnicamente impressionante, mas também teoricamente profundo e respeitado pela comunidade econométrica.
+## References
+
+- Heckman, J. J. (1979). Sample Selection Bias as a Specification Error. *Econometrica*, 47(1), 153-161.
+- Cunha, F., & Heckman, J. J. (2007). The Technology of Skill Formation. *American Economic Review*, 97(2), 31-47.
+- Chernozhukov, V. et al. (2018). Double/Debiased Machine Learning. *The Econometrics Journal*, 21(1), C1-C68.
+- Veitch, V., Sridhar, D., & Blei, D. (2020). Adapting Text Embeddings for Causal Inference. *UAI 2020*.

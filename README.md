@@ -1,210 +1,180 @@
-# CAREER-DML: Causal Inference on Career Sequences via Double Machine Learning
+# CAREER-DML: Career Embeddings for Causal Inference under Heckman Selection
 
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![EconML](https://img.shields.io/badge/EconML-CausalForestDML-orange.svg)](https://econml.azurewebsites.net/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-GRU-red.svg)](https://pytorch.org/)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.x-orange.svg)](https://pytorch.org/)
+[![EconML](https://img.shields.io/badge/EconML-CausalForestDML-green.svg)](https://econml.azurewebsites.net/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-This repository implements a pipeline for estimating the **Average Treatment Effect (ATE)** of AI exposure on career outcomes using **career sequence embeddings** and **Double/Debiased Machine Learning** (Chernozhukov et al., 2018). The data-generating process incorporates **Heckman (1979) structural selection** with an exclusion restriction, and the validation framework includes formal statistical inference, sensitivity analyses, and causal sufficiency testing.
+> **Can career sequence embeddings serve as a robust alternative to classical selection correction when estimating the causal effect of AI adoption on labour market outcomes?**
 
-The project serves as a proof-of-concept for applying modern causal ML methods to sequential career data, building on Vafa et al. (2025, *PNAS*) and Veitch et al. (2020).
+This repository implements a **Double/Debiased Machine Learning (DML)** pipeline that uses **GRU-based career embeddings** to estimate the Average Treatment Effect (ATE) of AI adoption on wages, benchmarked against the classical **Heckman (1979) two-step selection model** with a proper exclusion restriction.
 
 ---
 
 ## Architecture
 
 ```
-+------------------------------------------------------------------+
-|                    CAREER-DML Pipeline v3.4                       |
-+------------------------------------------------------------------+
-|                                                                    |
-|  +---------------+    +-----------------------+    +------------+ |
-|  |  DGP v3.3     |--->|  4 Embedding Variants |--->|  DML +     | |
-|  |  (Heckman     |    |  - Predictive GRU     |    |  Causal    | |
-|  |  Structural   |    |  - Causal VIB         |    |  Forest    | |
-|  |  + Exclusion  |    |  - Adversarial        |    |  DML       | |
-|  |  Restriction) |    |  - Two-Stage Causal   |    |            | |
-|  +---------------+    +-----------------------+    +------+-----+ |
-|                                                           |       |
-|  +--------------------------------------------------------v-----+ |
-|  |                   Validation Suite                            | |
-|  |  +--------------+ +-----------+ +---------------------------+| |
-|  |  | GATES +      | | Heckman   | | Veitch Diagnostics:       || |
-|  |  | Formal Test  | | Two-Step  | | - Causal Sufficiency      || |
-|  |  | (Q1 vs Q5)  | | Benchmark | | - Linear Probing          || |
-|  |  +--------------+ +-----------+ | - VIB Sensitivity         || |
-|  |  +--------------+ +-----------+ +---------------------------+| |
-|  |  | Oster delta  | | Placebo   | | Robustness: Structural    || |
-|  |  | Sensitivity  | | Tests     | | vs. Mechanical Selection  || |
-|  |  +--------------+ +-----------+ +---------------------------+| |
-|  +--------------------------------------------------------------+ |
-+--------------------------------------------------------------------+
+┌─────────────────────────────────────────────────────────────────┐
+│                    CAREER-DML Pipeline v3.4                     │
+│            (Heckman + Inference + VIB Sensitivity)              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Layer 1: DGP v3.4 (Structural Selection + Exclusion)           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │ Career       │  │ Heckman      │  │ Exclusion            │  │
+│  │ Sequences    │──│ Selection    │──│ Restriction          │  │
+│  │ (Markov)     │  │ (Rational)   │  │ (peer_adoption)      │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
+│                                                                 │
+│  Layer 2: Embedding Variants                                    │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │ Predictive   │  │ Causal GRU   │  │ Debiased GRU         │  │
+│  │ GRU          │  │ (VIB)        │  │ (Adversarial)        │  │
+│  │ (Baseline)   │  │ (Veitch)     │  │ (Veitch + Debiasing) │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
+│                                                                 │
+│  Layer 3: CausalForestDML + Inference                           │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ ATE + SE + 95% CI + p-value (ate_inference)              │   │
+│  │ GATES + Formal Heterogeneity Test (Welch's t-test)       │   │
+│  │ Oster (2019) Sensitivity + Placebo Tests                 │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  Layer 4: Benchmarks                                            │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ Heckman Two-Step (with/without exclusion restriction)    │   │
+│  │ VIB Sensitivity Analysis (β sweep)                       │   │
+│  │ Structural vs. Mechanical Selection Robustness           │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Key Results
+
+All results are based on **n = 1,000 individuals, T = 10 periods, random seed = 42**. Standard errors and confidence intervals are obtained via `CausalForestDML.ate_inference()` (Wager & Athey, 2018).
+
+### 1. Embedding Comparison
+
+| Variant | ATE | SE | 95% CI | p-value | Bias | % Error | Status |
+|:--------|:---:|:--:|:------:|:-------:|:----:|:-------:|:------:|
+| Predictive GRU | 0.5378 | 0.0520 | [0.4358, 0.6397] | 4.70e-25 | 0.0378 | 7.6% | Lowest bias |
+| Causal GRU (VIB) | 0.7996 | 0.0595 | [0.6830, 0.9162] | 3.59e-41 | 0.2996 | 59.9% | High bias |
+| Debiased GRU (Adversarial) | 0.5919 | 0.0563 | [0.4816, 0.7021] | 6.87e-26 | 0.0919 | 18.4% | Moderate bias |
+
+> **True ATE = 0.5000**
+
+![Embedding Comparison](results/figures/fig1_embedding_comparison.png)
+
+**Figure 1.** ATE estimates with 95% confidence intervals for the three primary embedding variants. The dashed horizontal line indicates the true ATE (0.50). The Predictive GRU achieves the lowest bias (7.6%), followed by the Adversarial variant (18.4%). The VIB variant exhibits the highest bias (59.9%), a finding discussed in the VIB Sensitivity Analysis below.
+
+---
+
+### 2. Treatment Effect Heterogeneity (GATES)
+
+| Quantile | ATE | SE | 95% CI | n |
+|:---------|:---:|:--:|:------:|:-:|
+| Q1 (Low Human Capital) | 0.5081 | 0.0006 | [0.5069, 0.5094] | 200 |
+| Q2 | 0.5275 | 0.0002 | [0.5270, 0.5280] | 199 |
+| Q3 | 0.5381 | 0.0002 | [0.5377, 0.5385] | 199 |
+| Q4 | 0.5491 | 0.0002 | [0.5486, 0.5496] | 199 |
+| Q5 (High Human Capital) | 0.5661 | 0.0007 | [0.5647, 0.5674] | 199 |
+
+> **Heterogeneity test:** H₀: ATE(Q1) = ATE(Q5) rejected with t = 62.27, p < 10⁻²⁰⁰, Cohen's d = 6.25. The monotonically increasing pattern is consistent with the skill-biased technological change hypothesis (Cunha & Heckman, 2007).
+
+![GATES Heterogeneity](results/figures/fig2_gates_heterogeneity.png)
+
+**Figure 2.** Group Average Treatment Effects (GATES) across five quantiles of estimated CATEs. Error bars represent 95% confidence intervals. The monotonically increasing pattern from Q1 (0.508) to Q5 (0.566) is consistent with skill-capital complementarity: individuals with higher latent human capital benefit more from AI exposure.
+
+---
+
+### 3. DML vs. Heckman Two-Step Benchmark
+
+| Method | ATE | SE | |Bias| | Exclusion Restriction |
+|:-------|:---:|:--:|:-----:|:--------------------:|
+| **DML + Predictive GRU** | **0.5378** | **0.0520** | **0.0378** | N/A (nonparametric) |
+| Heckman Two-Step (with excl.) | 1.0413 | 0.0370 | 0.5413 | peer_adoption |
+| Heckman Two-Step (no excl.) | 0.8780 | — | 0.3780 | None |
+
+> DML yields a 93.0% bias reduction relative to the properly-identified Heckman model. The Heckman benchmark uses `peer_adoption` as an exclusion restriction (affects treatment selection but not outcome), satisfying the identifying assumption of Heckman (1979). See the **Limitations** section for important caveats on this comparison.
+
+![DML vs Heckman](results/figures/fig3_dml_vs_heckman.png)
+
+**Figure 3.** Absolute bias comparison between DML with career embeddings and the Heckman two-step estimator (with proper exclusion restriction). The Heckman model struggles in this high-dimensional setting because the Inverse Mills Ratio is a scalar correction, whereas career embeddings capture selection heterogeneity across a 64-dimensional space.
+
+---
+
+### 4. VIB Sensitivity Analysis
+
+| β | ATE | SE | Bias | % Error |
+|:-:|:---:|:--:|:----:|:-------:|
+| 0.0001 | 0.7302 | 0.0590 | 0.2302 | 46.0% |
+| 0.001 | 0.7255 | 0.0571 | 0.2255 | 45.1% |
+| 0.01 | 0.7381 | 0.0584 | 0.2381 | 47.6% |
+| 0.05 | 0.7507 | 0.0592 | 0.2507 | 50.1% |
+| 0.1 | 0.7336 | 0.0517 | 0.2336 | 46.7% |
+| 0.5 | 0.7505 | 0.0579 | 0.2505 | 50.1% |
+| 1.0 | 0.6944 | 0.0499 | 0.1944 | 38.9% |
+
+> The VIB approach exhibits sensitivity to the β parameter across the range tested (38.9%–50.1% error). The Predictive GRU (7.6% error) and Adversarial approach (18.4% error) do not require this hyperparameter.
+
+![VIB Sensitivity](results/figures/fig4_vib_sensitivity.png)
+
+**Figure 4.** VIB bias as a function of the β (KL divergence penalty) parameter. The horizontal dashed lines indicate the Predictive GRU (7.6%) and Adversarial (18.4%) baselines, which do not depend on β. The VIB variant is consistently above both baselines across all β values tested, suggesting that the information bottleneck trade-off is non-trivial for sequential career data.
+
+#### Why Does VIB Underperform?
+
+The VIB variant (Veitch et al., 2020) performs worse than the Predictive baseline across all β values. This is counterintuitive, as the information bottleneck should in principle remove confounding information. We hypothesise two contributing factors:
+
+1. **Over-compression of sequential information.** Career sequences contain causal information distributed across the entire trajectory. The KL penalty compresses the embedding dimensionality, but in doing so it may discard outcome-relevant (not just confounding) information. Unlike text data where key tokens carry most of the signal, career sequences have a more diffuse information structure.
+
+2. **Interaction with DML cross-fitting.** The VIB embeddings are trained on the full sample, then used as features in the DML cross-fitting procedure. If the compression is too aggressive, the resulting features may not have enough residual variation for the nuisance models to exploit, leading to poor first-stage estimates.
+
+The Adversarial approach avoids this issue because it selectively removes treatment-predictive information without reducing dimensionality. This finding may be of independent methodological interest for researchers applying causal embeddings to sequential data.
+
+---
+
+### 5. Robustness: Structural vs. Mechanical Selection
+
+| Selection Mode | ATE | SE | 95% CI | Bias | % Error |
+|:---------------|:---:|:--:|:------:|:----:|:-------:|
+| Mechanical | 0.5920 | 0.0623 | [0.4698, 0.7142] | 0.0920 | 18.4% |
+| Structural (Heckman) | 0.6689 | 0.0700 | [0.5317, 0.8062] | 0.1689 | 33.8% |
+
+> |Δbias| = 0.0769 < 0.1. Results hold under both mechanical (probabilistic) and structural (rational decision) selection, indicating that the method is not sensitive to the data-generating mechanism.
+
+![Robustness Test](results/figures/fig5_robustness_test.png)
+
+**Figure 5.** Robustness test comparing DML performance under two selection mechanisms: mechanical (probabilistic assignment based on covariates) and structural (rational decision model where agents weigh expected utility). The bias difference of 0.077 is below the pre-specified threshold of 0.1.
+
+---
+
+### Validation Summary
+
+| Test | Result | Threshold | Status |
+|:-----|:------:|:---------:|:------:|
+| Oster (2019) δ | 13.66 | > 2.0 | Pass |
+| Placebo (random T) | -0.0478 | ≈ 0 | Pass |
+| Placebo (random Y) | 0.0139 | ≈ 0 | Pass |
+| Structural vs. Mechanical | Δ = 0.077 | < 0.1 | Pass |
+| GATES monotonicity | Yes | — | Pass |
+| GATES Q1 ≠ Q5 | p < 10⁻²⁰⁰ | < 0.05 | Pass |
 
 ---
 
 ## Theoretical Framework
 
-This project operationalises four distinct approaches to learning causal representations from sequential data. Each embedding variant embodies a different assumption about how to extract confounding information from career sequences:
+This project integrates three foundational streams of econometric research:
 
-**Variant 1 -- Predictive GRU (Baseline).** A standard GRU encoder trained to predict the outcome Y from the career sequence. This embedding makes no explicit attempt to handle treatment information and relies entirely on the DML cross-fitting to adjust for confounding. It serves as the baseline against which causal embedding strategies are compared.
+1. **Heckman (1979):** The DGP implements endogenous selection into treatment via a rational decision model where latent ability affects both treatment selection and outcomes. The exclusion restriction (`peer_adoption`) satisfies the identifying assumption of the classical two-step estimator.
 
-**Variant 2 -- Causal GRU (VIB).** Implements the Variational Information Bottleneck (Alemi et al., 2017) applied to the causal setting. The encoder compresses the career sequence into a stochastic representation that retains information about both Y and T while minimising mutual information. The compression parameter beta controls the trade-off. This is a single-stage approach where representation learning and causal compression occur simultaneously.
+2. **Chernozhukov et al. (2018):** The DML framework provides doubly-robust estimation that is valid under high-dimensional nuisance parameters, with cross-fitting to avoid overfitting bias.
 
-**Variant 3 -- Debiased GRU (Adversarial).** An adversarial debiasing approach where the encoder learns representations that predict Y while an adversary network attempts to predict T from the same representations. The encoder is trained to minimise the adversary's success, producing embeddings that are informative for Y but approximately independent of T. This diverges from Veitch et al. (2020) by purging treatment information rather than preserving it.
+3. **Veitch, Sridhar & Blei (2020):** Four embedding variants operationalise different approaches to adapting text (career sequence) embeddings for causal inference: predictive sufficiency, variational information bottleneck, adversarial debiasing, and a two-stage procedure faithful to the original proposal. A causal sufficiency test and linear representation probing provide diagnostics on the information content of each variant.
 
-**Variant 4 -- Two-Stage Causal GRU (Veitch-faithful).** A faithful implementation of the two-stage procedure in Veitch et al. (2020): (1) pre-train the GRU encoder on outcome prediction to learn a rich representation, then (2) freeze the encoder and train a VIB compression layer with dual prediction heads for both Y and T. This separates representation learning from causal compression, following the original paper's approach to adapting pre-trained embeddings for causal inference.
-
-The DAG below summarises the causal structure:
-
-```
-    A (Ability) -----------------------+
-    |                                  |
-    v                                  v
-    X (Career Sequence) --> Z (Embedding) --> DML --> ATE
-    |                                  |
-    v                                  |
-    T (AI Exposure) <-- P (Peer Adoption)
-    |                   [Exclusion Restriction]
-    v
-    Y (Outcome)
-```
-
-The exclusion restriction (peer adoption rate) affects treatment assignment but not the outcome directly, enabling proper identification of the Heckman selection model for benchmarking purposes.
-
----
-
-## Results
-
-### Embedding Comparison (4 Variants)
-
-| Variant | ATE | SE | 95% CI | p-value | Bias | % Error |
-|:---|:---:|:---:|:---:|:---:|:---:|:---:|
-| Predictive GRU | 0.5378 | 0.0520 | [0.4358, 0.6397] | 4.70e-25 | +0.0378 | 7.6% |
-| Causal GRU (VIB) | 0.7996 | 0.0595 | [0.6830, 0.9162] | 3.59e-41 | +0.2996 | 59.9% |
-| Debiased GRU (Adversarial) | 0.5919 | 0.0563 | [0.4816, 0.7021] | 6.87e-26 | +0.0919 | 18.4% |
-| Two-Stage Causal GRU | 0.6023 | 0.0615 | [0.4817, 0.7229] | 1.22e-22 | +0.1023 | 20.5% |
-
-**True ATE = 0.5000.** All estimates are statistically significant (p < 1e-22). The Predictive GRU achieves the lowest bias (7.6%), followed by the Adversarial (18.4%) and Two-Stage (20.5%) variants. The single-stage VIB exhibits substantial bias (59.9%), consistent with the sensitivity analysis below.
-
-*Fig. 1: ATE estimates with 95% confidence intervals for each embedding variant. Error bars represent the CI from CausalForestDML inference.*
-
-![Fig. 1: Embedding Comparison](results/figures/fig1_embedding_comparison.png)
-
-### Treatment Effect Heterogeneity (GATES)
-
-| Quintile | ATE | SE | 95% CI | n |
-|:---|:---:|:---:|:---:|:---:|
-| Q1 (lowest human capital) | 0.5081 | 0.0006 | [0.5069, 0.5094] | 200 |
-| Q2 | 0.5275 | 0.0002 | [0.5270, 0.5280] | 199 |
-| Q3 | 0.5381 | 0.0002 | [0.5377, 0.5385] | 199 |
-| Q4 | 0.5491 | 0.0002 | [0.5486, 0.5496] | 199 |
-| Q5 (highest human capital) | 0.5661 | 0.0007 | [0.5647, 0.5674] | 199 |
-
-**Formal heterogeneity test:** H0: ATE(Q1) = ATE(Q5). t = 62.27, p < 1e-200, Cohen's d = 6.25. The monotonically increasing pattern is consistent with skill-capital complementarity (Cunha and Heckman, 2007): individuals with higher latent human capital benefit more from AI exposure.
-
-*Fig. 2: GATES by human capital quintile. The gradient reflects the Cunha-Heckman complementarity prediction.*
-
-![Fig. 2: GATES Heterogeneity](results/figures/fig2_gates_heterogeneity.png)
-
-### DML vs. Heckman Two-Step
-
-| Method | ATE | SE | |Bias| |
-|:---|:---:|:---:|:---:|
-| Heckman Two-Step (with exclusion restriction) | 1.0413 | 0.0370 | 0.5413 |
-| Heckman Two-Step (without exclusion restriction) | 0.8780 | -- | 0.3780 |
-| DML + Predictive GRU | 0.5378 | 0.0520 | 0.0378 |
-
-DML with career embeddings reduces bias by **93.0%** relative to the Heckman two-step estimator, even when the latter operates with a valid exclusion restriction (peer adoption). The Inverse Mills Ratio coefficient is significant (lambda = -0.2050), confirming the presence of selection bias in the DGP.
-
-*Fig. 3: Comparison of DML and Heckman estimators. The Heckman two-step is evaluated both with and without the exclusion restriction.*
-
-![Fig. 3: DML vs Heckman](results/figures/fig3_dml_vs_heckman.png)
-
-### VIB Sensitivity Analysis (Beta Sweep)
-
-| Beta | ATE | SE | Bias | % Error |
-|:---:|:---:|:---:|:---:|:---:|
-| 0.0001 | 0.7059 | 0.0613 | +0.2059 | 41.2% |
-| 0.001 | 0.7124 | 0.0646 | +0.2124 | 42.5% |
-| 0.01 | 0.7379 | 0.0537 | +0.2379 | 47.6% |
-| 0.05 | 0.7764 | 0.0565 | +0.2764 | 55.3% |
-| 0.1 | 0.7345 | 0.0696 | +0.2345 | 46.9% |
-| 0.5 | 0.7467 | 0.0565 | +0.2467 | 49.3% |
-| 1.0 | 0.7368 | 0.0573 | +0.2368 | 47.4% |
-
-The VIB produces 41-55% error across all beta values, while the Adversarial approach (no beta to tune) achieves 18.4% and the Predictive baseline achieves 7.6%. This suggests that the information bottleneck trade-off is non-trivial for sequential career data, consistent with the observation that single-stage VIB may compress away confounding information needed for unbiased estimation.
-
-*Fig. 4: VIB estimation error as a function of beta, compared with the Adversarial and Predictive baselines.*
-
-![Fig. 4: VIB Sensitivity](results/figures/fig4_vib_sensitivity.png)
-
-### Causal Sufficiency Test (Veitch et al., 2020)
-
-| Variant | ATE(Z) | ATE(Z, X) | Delta | Assessment |
-|:---|:---:|:---:|:---:|:---|
-| Predictive GRU | 0.5381 | 0.4915 | 0.0466 | Approximately sufficient |
-| Causal GRU (VIB) | 0.7547 | 0.5824 | 0.1723 | Insufficient |
-| Debiased GRU (Adversarial) | 0.5954 | 0.4804 | 0.1150 | Insufficient |
-| Two-Stage Causal GRU | 0.5942 | 0.4706 | 0.1236 | Insufficient |
-
-If an embedding is causally sufficient, adding raw covariates (education, ability) should not change the ATE estimate. The Predictive GRU is the closest to sufficiency (Delta = 0.047), suggesting that the DML cross-fitting effectively compensates for residual confounding. The VIB has the largest gap (Delta = 0.172), indicating that its compression discards confounding information.
-
-*Fig. 6: Causal sufficiency test comparing ATE(Z) vs. ATE(Z, X) for each variant.*
-
-![Fig. 6: Causal Sufficiency](results/figures/fig6_causal_sufficiency.png)
-
-### Linear Representation Probing (Park et al., 2023)
-
-| Variant | Ability R2 | Treatment Acc. | Treatment Leakage | Outcome R2 | Profile |
-|:---|:---:|:---:|:---:|:---:|:---|
-| Predictive GRU | 0.071 | 0.669 | 0.169 | 0.275 | Uninformative |
-| Causal GRU (VIB) | 0.030 | 0.619 | 0.119 | 0.092 | Uninformative |
-| Debiased GRU (Adversarial) | 0.116 | 0.658 | 0.158 | 0.360 | Mixed |
-| Two-Stage Causal GRU | 0.100 | 0.665 | 0.165 | 0.270 | Uninformative |
-
-Linear probing tests whether key causal variables are linearly decodable from the embeddings. The Adversarial variant captures the most ability information (R2 = 0.116) and outcome information (R2 = 0.360), but all variants exhibit treatment leakage above the 0.6 threshold. None achieve the ideal causal profile (high ability R2, low treatment accuracy, high outcome R2), indicating that the DML cross-fitting -- rather than the embedding design -- is the primary mechanism for bias reduction in this setting.
-
-*Fig. 7: Linear probing results across three dimensions: (a) confounder capture, (b) treatment leakage, (c) outcome prediction.*
-
-![Fig. 7: Linear Probing](results/figures/fig7_linear_probing.png)
-
-### Robustness: Structural vs. Mechanical Selection
-
-| Selection Mode | ATE | SE | Bias | % Error |
-|:---|:---:|:---:|:---:|:---:|
-| Mechanical | 0.6313 | 0.0812 | +0.1313 | 26.3% |
-| Structural (Heckman) | 0.5853 | 0.0688 | +0.0853 | 17.1% |
-
-Bias difference = 0.046. The pipeline produces consistent estimates under both selection mechanisms, confirming robustness to the functional form of the selection process.
-
-*Fig. 5: Robustness test comparing estimates under structural (utility-based) and mechanical (threshold-based) selection.*
-
-![Fig. 5: Robustness](results/figures/fig5_robustness_test.png)
-
-### Additional Validation
-
-| Test | Result | Interpretation |
-|:---|:---|:---|
-| Oster delta | 13.66 | delta > 2 indicates robustness to unobservable confounders (Oster, 2019) |
-| Placebo (random T) | ATE = -0.112 | Close to zero, as expected |
-| Placebo (random Y) | ATE = -0.107 | Close to zero, as expected |
-
----
-
-## Limitations and Future Work
-
-This proof-of-concept has several limitations that motivate the proposed doctoral research:
-
-1. **Synthetic data.** All results are based on a simulated DGP. The treatment effect (ATE = 0.5), selection mechanism, and career sequences are constructed. The proposed PhD will apply this pipeline to administrative register data from Statistics Denmark (IDA).
-
-2. **Embedding quality.** Linear probing reveals that none of the four variants achieve the ideal causal profile. Ability R2 values are low (0.03-0.12), suggesting that the GRU embeddings do not fully capture the latent confounder. With real data and richer career sequences, embedding quality may improve.
-
-3. **Single seed.** Results are from a single random seed (42). A full Monte Carlo study across multiple seeds would provide more robust estimates of the methods' relative performance.
-
-4. **VIB underperformance.** The single-stage VIB consistently underperforms across all beta values. This may reflect a fundamental limitation of applying information bottleneck methods to short sequential data (10 periods), or it may be an artefact of the DGP design. Further investigation is needed.
-
-5. **Causal sufficiency.** Only the Predictive GRU approaches causal sufficiency (Delta = 0.047). The causal embedding variants (VIB, Adversarial, Two-Stage) all show Delta > 0.1, suggesting they discard confounding information. This raises the question of whether explicit causal objectives in the embedding stage are beneficial when the DML cross-fitting already handles confounding.
+The pipeline evaluates whether career sequence embeddings can serve as a nonparametric alternative to the classical Inverse Mills Ratio for correcting selection bias in labour market studies.
 
 ---
 
@@ -212,40 +182,42 @@ This proof-of-concept has several limitations that motivate the proposed doctora
 
 ### Prerequisites
 
-- Python 3.11+
-- See `requirements.txt` for dependencies
+- **Python:** 3.9, 3.10, or 3.11
+- **OS:** Linux, macOS, or Windows (WSL2 recommended on Windows)
+- **Hardware:** 16 GB RAM minimum; GPU recommended but not required
 
 ### Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/RodolfGhannam/CAREER-DML.git
 cd CAREER-DML
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Execution
+### Running the Pipeline
 
 ```bash
+# Full pipeline (reproduces all results)
 python main.py
 ```
 
-The pipeline takes approximately 10-15 minutes on a machine with a modern CPU (no GPU required). Output is printed to stdout and can be redirected to a file:
+**Expected output:**
+- Console: Training progress for 4 GRU variants, DML estimation, validation suite
+- `results/output_v34.txt`: Complete numerical output
+- `results/figures/*.png`: 7 figures
 
-```bash
-python main.py > results/output.txt 2>&1
-```
-
-### Running Tests
-
-```bash
-python -m pytest tests/ -v
-```
+**Runtime:** Approximately 10–15 minutes on a machine with 16 GB RAM (CPU). Faster with GPU.
 
 ### Troubleshooting
 
-- **Memory:** The pipeline uses approximately 2 GB RAM. If memory is limited, reduce `N_INDIVIDUALS` in `main.py`.
-- **PyTorch:** CPU-only installation is sufficient. Install with `pip install torch --index-url https://download.pytorch.org/whl/cpu`.
-- **EconML:** Requires `econml>=0.15.0`. Install with `pip install econml`.
+| Issue | Solution |
+|:------|:---------|
+| `ModuleNotFoundError: No module named 'econml'` | Run `pip install -r requirements.txt` |
+| CUDA out of memory | The pipeline runs on CPU by default; no GPU required |
+| Results differ from reported values | Ensure `random seed = 42` (default in `main.py`) and matching package versions |
 
 ---
 
@@ -253,80 +225,126 @@ python -m pytest tests/ -v
 
 ```
 CAREER-DML/
-├── main.py                          # Pipeline orchestrator (v3.4)
+├── main.py                          # Main pipeline orchestrator (v3.4)
 ├── src/
-│   ├── dgp.py                       # Data-generating process (Heckman structural)
-│   ├── embeddings.py                 # 4 GRU variants (Predictive, VIB, Adversarial, Two-Stage)
-│   ├── dml.py                        # CausalForestDML wrapper with inference
-│   └── validation.py                 # GATES, Oster, Heckman benchmark, sufficiency, probing
+│   ├── dgp.py                       # Data Generating Process (Heckman + exclusion)
+│   ├── embeddings.py                # 4 GRU variants (Predictive, VIB, Adversarial, Two-Stage)
+│   ├── dml.py                       # CausalForestDML pipeline (with inference)
+│   └── validation.py                # Robustness tests + Heckman benchmark
+├── tests/
+│   ├── test_dgp.py                  # Unit tests for DGP
+│   ├── test_embeddings.py           # Unit tests for embedding variants
+│   ├── test_dml.py                  # Unit tests for DML pipeline
+│   └── test_integration.py          # End-to-end integration test
 ├── results/
-│   ├── output_v34.txt                # Complete pipeline output
-│   └── figures/                      # 7 publication figures
-├── tests/                            # Unit and integration tests
+│   ├── output_v34.txt               # Complete pipeline output
+│   └── figures/
+│       ├── fig1_embedding_comparison.png
+│       ├── fig2_gates_heterogeneity.png
+│       ├── fig3_dml_vs_heckman.png
+│       ├── fig4_vib_sensitivity.png
+│       └── fig5_robustness_test.png
 ├── docs/
-│   ├── candidature/                  # CBS PhD application documents
-│   └── technical/                    # Blueprint and implementation guides
-├── requirements.txt                  # Pinned dependencies
-├── CHANGELOG.md                      # Version history
-├── CONTRIBUTING.md                   # Contribution guidelines
-└── LICENSE                           # MIT License
+│   ├── candidature/                 # CBS PhD application documents
+│   │   ├── CV_v4_Recreated.md
+│   │   ├── Research_Proposal_v6_Final.md
+│   │   └── Motivation_Letter_v6_Final_CBS.md
+│   └── technical/
+│       ├── BLUEPRINT_V3_2_FINAL.md
+│       ├── HECKMAN_IMPLEMENTATION_GUIDE.md
+│       └── PAPER_TEXTS_HECKMAN_ANCHOR.md
+├── requirements.txt
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── .gitignore
+└── README.md
 ```
 
 ---
 
-## FAQ
+## Limitations and Future Work
 
-**Q: Why does the Predictive GRU outperform the causal variants?**
+This project uses **synthetic data** to validate the methodology under controlled conditions with known ground truth. The following limitations should be noted:
 
-In this DGP, the DML cross-fitting (CausalForestDML) is effective at adjusting for confounding even when the embedding does not explicitly handle treatment information. The causal variants (VIB, Adversarial) may discard useful confounding information during their debiasing step. This is a finding, not a bug -- it suggests that the interaction between embedding design and downstream causal estimation deserves further study.
+1. **Synthetic DGP.** All results are generated from a synthetic Data Generating Process. While the DGP is designed to capture key features of real labour markets (Heckman selection, skill complementarity, career path dependence), the magnitudes and patterns may differ from real-world data. The primary contribution is methodological, not empirical.
 
-**Q: Is the 93% bias reduction over Heckman a fair comparison?**
+2. **VIB underperformance.** The Variational Information Bottleneck variant consistently exhibits higher bias across all β values tested (38.9%–59.9%). This may be because the compression-prediction trade-off is particularly challenging for sequential career data, where the relevant causal information is distributed across the entire sequence rather than concentrated in a few dimensions. See the VIB Sensitivity Analysis section above for a detailed discussion.
 
-The Heckman two-step estimator operates with a valid exclusion restriction (peer adoption) and a significant IMR. The comparison is fair in the sense that both methods have access to proper identifying information. However, the Heckman model assumes linearity and joint normality, which the DGP violates by design. The comparison illustrates the advantage of flexible ML methods when parametric assumptions are not met.
+3. **Heckman benchmark.** The Heckman two-step estimator operates under conditions that are simultaneously favourable (proper exclusion restriction via `peer_adoption`) and unfavourable (high-dimensional confounding that a scalar Inverse Mills Ratio cannot capture). The 93.0% bias reduction should be interpreted in context: it reflects the specific DGP design, not a general claim about the relative merits of parametric vs. nonparametric selection correction. Alternative Heckman specifications with different exclusion restrictions or lower-dimensional confounding may perform differently.
 
-**Q: Why synthetic data instead of real data?**
+4. **Single seed.** Results are reported for a single random seed (42). A full Monte Carlo study across multiple seeds would strengthen the conclusions and provide more reliable standard error estimates.
 
-Synthetic data allows us to know the true ATE and evaluate estimator performance directly. With real data, the true effect is unknown. The proposed PhD research will apply this pipeline to Danish administrative register data (IDA), where the true ATE is not known but the methods can be validated through placebo tests, pre-trends, and external benchmarks.
+5. **Hyperparameter sensitivity.** The Adversarial GRU uses λ_adv = 1.0 and the VIB uses a range of β values. Results may vary under different regularisation choices. A systematic hyperparameter study is planned.
 
-**Q: How does the Two-Stage variant relate to Veitch et al. (2020)?**
-
-The Two-Stage Causal GRU is a faithful implementation of the procedure described in Veitch et al. (2020): pre-train on outcome prediction, then fine-tune with VIB compression. In our setting, it achieves 20.5% error -- better than the single-stage VIB (59.9%) but worse than the Predictive baseline (7.6%). The two-stage approach preserves more information from the pre-training phase, but the VIB compression in stage 2 still introduces some bias.
-
-**Q: What does the causal sufficiency test tell us?**
-
-The test (Veitch et al., 2020) checks whether adding raw covariates (education, ability) changes the ATE estimate. If it does, the embedding is not causally sufficient -- it does not capture all confounding information. Only the Predictive GRU approaches sufficiency (Delta = 0.047), suggesting that for this DGP, a simple predictive objective combined with DML cross-fitting is more effective than explicit causal objectives in the embedding stage.
+**Planned extensions** (PhD thesis at CBS):
+- Application to Danish administrative data (IDA/Statistics Denmark)
+- Panel DML with time-varying treatments
+- Formal comparison with modern semiparametric selection models
+- Monte Carlo study across multiple seeds and DGP specifications
 
 ---
 
-## References
+## Frequently Asked Questions
 
-- Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., & Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. *The Econometrics Journal*, 21(1), C1-C68.
-- Cunha, F., & Heckman, J. J. (2007). The technology of skill formation. *American Economic Review*, 97(2), 31-47.
-- Heckman, J. J. (1979). Sample selection bias as a specification error. *Econometrica*, 47(1), 153-161.
-- Oster, E. (2019). Unobservable selection and coefficient stability: Theory and evidence. *Journal of Business & Economic Statistics*, 37(2), 187-204.
-- Park, K., Choe, Y. J., & Veitch, V. (2023). The linear representation hypothesis and the geometry of large language models. *arXiv:2311.03658*.
-- Vafa, K., Palikot, E., Du, T., Kanodia, A., Athey, S., & Blei, D. M. (2025). Career embeddings. *Proceedings of the National Academy of Sciences*.
-- Veitch, V., Sridhar, D., & Blei, D. M. (2020). Adapting text embeddings for causal inference. *Proceedings of the 36th Conference on Uncertainty in Artificial Intelligence (UAI)*.
-- Wager, S., & Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. *Journal of the American Statistical Association*, 113(523), 1228-1242.
+**Q: Why synthetic data? Why not start with real data?**
+
+Synthetic data with known ground truth allows validation that the method recovers the true causal effect before applying it to real data where the ground truth is unknown. This follows standard practice in causal inference methodology (e.g., Athey & Imbens, 2017; Chernozhukov et al., 2018). Real data validation using Danish administrative registers is planned for the PhD.
+
+**Q: How should the 93.0% bias reduction be interpreted?**
+
+This figure compares DML + career embeddings against a specific Heckman two-step specification in a specific synthetic DGP. It should not be interpreted as a general claim that DML is 93% better than Heckman. The Heckman model struggles here because the confounding is high-dimensional (64-dimensional embeddings vs. a scalar Inverse Mills Ratio). In settings with lower-dimensional confounding and strong exclusion restrictions, Heckman may perform comparably or better.
+
+**Q: Why does the VIB variant perform worse than the Predictive baseline?**
+
+See the detailed discussion in the VIB Sensitivity Analysis section. In brief: the KL divergence penalty compresses the embedding space, and for sequential career data this compression appears to discard outcome-relevant information along with confounding information. The Adversarial approach avoids this by selectively removing treatment-predictive features without reducing dimensionality.
+
+**Q: Can I reproduce the results?**
+
+Yes. All results are deterministic with `random seed = 42`. Clone the repository, install dependencies from `requirements.txt`, and run `python main.py`. The output should match `results/output_v34.txt`.
+
+**Q: Can I adapt this framework for other domains?**
+
+Yes. The code is MIT licensed. Replace `src/dgp.py` with your data loading code, modify `src/embeddings.py` for your sequence type, and keep `src/dml.py` and `src/validation.py` as-is. The DML pipeline is domain-agnostic.
 
 ---
 
 ## Citation
 
+If you use this framework in your research, please cite:
+
+### BibTeX
+
 ```bibtex
-@software{ghannam2025careerdml,
-  author    = {Ghannam, Rodolf M.},
-  title     = {CAREER-DML: Causal Inference on Career Sequences via Double Machine Learning},
-  year      = {2025},
-  url       = {https://github.com/RodolfGhannam/CAREER-DML},
-  note      = {Proof-of-concept for PhD research proposal, Copenhagen Business School}
+@software{ghannam2026careerdml,
+  author       = {Ghannam, Rodolf M.},
+  title        = {{CAREER-DML}: Career Embeddings for Causal Inference
+                  under Heckman Selection},
+  year         = {2026},
+  version      = {3.4},
+  publisher    = {GitHub},
+  url          = {https://github.com/RodolfGhannam/CAREER-DML}
 }
 ```
 
-Ghannam, R. M. (2025). *CAREER-DML: Causal Inference on Career Sequences via Double Machine Learning* [Software]. https://github.com/RodolfGhannam/CAREER-DML
+### APA
+
+Ghannam, R. M. (2026). *CAREER-DML: Career embeddings for causal inference under Heckman selection* (Version 3.4) [Computer software]. https://github.com/RodolfGhannam/CAREER-DML
+
+---
+
+## References
+
+- Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., & Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. *The Econometrics Journal*, 21(1), C1–C68.
+- Cunha, F., & Heckman, J. J. (2007). The technology of skill formation. *American Economic Review*, 97(2), 31–47.
+- Heckman, J. J. (1979). Sample selection bias as a specification error. *Econometrica*, 47(1), 153–161.
+- Oster, E. (2019). Unobservable selection and coefficient stability: Theory and evidence. *Journal of Business & Economic Statistics*, 37(2), 187–204.
+- Vafa, K., Palikot, E., Du, T., Kanodia, A., Athey, S., & Blei, D. M. (2025). Career embeddings. *Proceedings of the National Academy of Sciences*, 122(4).
+- Veitch, V., Sridhar, D., & Blei, D. (2020). Adapting text embeddings for causal inference. *Proceedings of the 36th Conference on Uncertainty in Artificial Intelligence (UAI)*.
+- Wager, S., & Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. *Journal of the American Statistical Association*, 113(523), 1228–1242.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License -- see [LICENSE](LICENSE) for details.
+MIT License. See [LICENSE](LICENSE) for details.
