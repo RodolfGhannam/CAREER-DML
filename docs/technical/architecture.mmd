@@ -1,0 +1,37 @@
+graph TD
+    subgraph "1. Data Generation (DGP v3.2)"
+        A[DGP: Heckman Structural Selection] --> B(Raw Panel Data);
+    end
+
+    subgraph "2. Embedding Layer (src/embeddings.py)"
+        B --> C1(Predictive GRU);
+        B --> C2(Causal GRU - VIB);
+        B --> C3(Debiased GRU - Adversarial);
+    end
+
+    subgraph "3. Causal Estimation (src/dml.py)"
+        C1 --> D1(DML Estimation);
+        C2 --> D2(DML Estimation);
+        C3 --> D3(DML Estimation);
+    end
+
+    subgraph "4. Validation & Interpretation (src/validation.py)"
+        D3 -- Best Variant --> E(Variance Decomp.);
+        D3 --> F(GATES);
+        D3 --> G(Oster Delta);
+        D3 --> H(Placebo Tests);
+        D3 --> I(Heckman Benchmark);
+        A --> J(Robustness Test);
+    end
+
+    subgraph "5. Final Output"
+        E --> K[Results Report];
+        F --> K;
+        G --> K;
+        H --> K;
+        I --> K;
+        J --> K;
+    end
+
+    style C3 fill:#2ECC71,stroke:#27AE60,stroke-width:2px,color:#fff
+    style D3 fill:#2ECC71,stroke:#27AE60,stroke-width:2px,color:#fff

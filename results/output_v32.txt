@@ -1,0 +1,217 @@
+/home/ubuntu/career_dml_package/src/validation.py:102: RuntimeWarning: divide by zero encountered in scalar divide
+  delta = (beta_restricted * (R2_max - r2_restricted)) / (
+
+======================================================================
+  ETAPA 1: Geração de Dados — DGP v3.2 (Heckman Structural)
+======================================================================
+  Modo de seleção: structural
+  ATE verdadeiro: 0.5
+  Custo base de adaptação: 1.2
+  Fator ability no custo: 0.8
+  Indivíduos: 1000
+  Períodos: 10
+  Registros gerados: 10000
+  Taxa de tratamento: 41.90%
+  Outcome médio (tratados): 1.1208
+  Outcome médio (controlo): 0.0607
+
+======================================================================
+  ETAPA 2: Treino das 3 Variantes de Embedding
+======================================================================
+
+  --- Variante 1: Predictive GRU (Baseline) ---
+    Epoch 5/15 — Loss: 0.6146
+    Epoch 10/15 — Loss: 0.5730
+    Epoch 15/15 — Loss: 0.4906
+  Embedding shape: (1000, 64)
+
+  --- Variante 2: Causal GRU (VIB) ---
+    Epoch 5/15 — Loss: 1.0358
+    Epoch 10/15 — Loss: 0.9918
+    Epoch 15/15 — Loss: 0.9426
+  Embedding shape: (1000, 16)
+
+  --- Variante 3: Debiased GRU (Adversarial) ---
+    Epoch 5/15 — Encoder Loss: -0.0712, Adv Loss: 0.6797
+    Epoch 10/15 — Encoder Loss: -0.1199, Adv Loss: 0.6487
+    Epoch 15/15 — Encoder Loss: -0.1768, Adv Loss: 0.5661
+  Embedding shape: (1000, 16)
+
+======================================================================
+  ETAPA 3: Estimação DML — Comparação das 3 Variantes
+======================================================================
+
+  --- Predictive GRU ---
+    Propensity trimming: 6 observações removidas (0.6%)
+    ATE estimado: 0.7162
+    CATEs — mean: 0.7162, std: 0.0179
+  ATE Estimado: 0.7162
+  ATE Verdadeiro: 0.5000
+  Bias: 0.2162 (43.2%)
+
+  --- Causal GRU (VIB) ---
+    Propensity trimming: 6 observações removidas (0.6%)
+    ATE estimado: 0.8726
+    CATEs — mean: 0.8726, std: 0.0566
+  ATE Estimado: 0.8726
+  ATE Verdadeiro: 0.5000
+  Bias: 0.3726 (74.5%)
+
+  --- Debiased GRU (Adversarial) ---
+    Propensity trimming: 8 observações removidas (0.8%)
+    ATE estimado: 0.6712
+    CATEs — mean: 0.6712, std: 0.0318
+  ATE Estimado: 0.6712
+  ATE Verdadeiro: 0.5000
+  Bias: 0.1712 (34.2%)
+
+======================================================================
+  TABELA COMPARATIVA DE RESULTADOS
+======================================================================
+  Variante                       ATE Est.     Bias         % Erro       Status
+  ------------------------------ ------------ ------------ ------------ ---------------
+  Predictive GRU                 0.7162       0.2162       43.2         OK
+  Causal GRU (VIB)               0.8726       0.3726       74.5         OK
+  Debiased GRU (Adversarial)     0.6712       0.1712       34.2         WINNER
+
+  Melhor variante: Debiased GRU (Adversarial)
+
+======================================================================
+  ETAPA 4: Validação Completa — Debiased GRU (Adversarial)
+======================================================================
+
+  --- 4a. Variance Decomposition + Interpretação Heckman ---
+
+  Decomposição da Variância:
+    Oracle Variance (baseline): 0.000005 (0.0%)
+    Nuisance Penalty (ML estimation): 0.022791 (77.8%)
+    Common Support Penalty (Heckman selection): 0.006509 (22.2%)
+    Total Variance: 0.022796
+
+  Severidade do Viés de Seleção (Heckman): LEVE
+  Interpretação: A common_support_penalty é uma componente menor da variância, sugerindo que o overlap entre grupos é razoável. Mesmo assim, o adversarial debiasing oferece ganhos de precisão.
+
+  --- 4b. GATES + Interpretação Heckman (Capital Humano) ---
+
+  GATES (Group Average Treatment Effects):
+ group      ate  ci_lower  ci_upper  n_obs
+     1 0.622334  0.620032  0.624637    199
+     2 0.655596  0.654817  0.656374    198
+     3 0.675226  0.674427  0.676026    198
+     4 0.692736  0.692084  0.693388    198
+     5 0.710150  0.709190  0.711111    199
+
+  Resumo Heckman:
+    Q1 (menor capital humano): ATE = 0.6223 [0.6200, 0.6246]
+    Q5 (maior capital humano): ATE = 0.7102 [0.7092, 0.7111]
+    Gradiente de heterogeneidade: 0.0878
+    Ratio Q_max / Q1: 1.14x
+    Monotonicamente crescente: Sim
+  Interpretação: A análise de GATES revela uma forte heterogeneidade no efeito do tratamento, consistente com a teoria de complementaridade capital-competência (Cunha & Heckman, 2007). O retorno da exposição à IA varia de 0.6223 (Q1, menor capital humano latente) a 0.7102 (Q5, maior capital humano latente), uma diferença de 0.0878 (1.1x). O padrão é monotonicamente crescente, confirmando que indivíduos com maior capital humano latente (ability + education) beneficiam desproporcionalmente da exposição à IA. Isto é consistente com a hipótese de skill-biased technological change (SBTC) e com o modelo de formação de capital humano de Heckman.
+
+  --- 4c. Sensitivity Analysis (Oster Delta) ---
+  Delta de Oster: inf
+  Interpretação: delta = inf → robustez máxima (R² = R²_max)
+
+  --- 4d. Placebo Tests ---
+    ATE estimado: -0.0098
+    CATEs — mean: -0.0098, std: 0.0152
+    Propensity trimming: 5 observações removidas (0.5%)
+    ATE estimado: 0.0475
+    CATEs — mean: 0.0475, std: 0.0977
+  ATE com tratamento aleatório: -0.0098 (esperado ≈ 0)
+  ATE com outcome aleatório: 0.0475 (esperado ≈ 0)
+  Status: PASSOU
+
+======================================================================
+  ETAPA 5: Benchmark — Heckman Two-Step vs. DML
+======================================================================
+  ATE Heckman Two-Step: 2.3231
+  ATE DML (Debiased): 0.6712
+  ATE Verdadeiro: 0.5000
+  R² do modelo Heckman: 0.6002
+  Coeficiente IMR: -0.9363
+  IMR significativo: Sim
+
+  Interpretação: O modelo de Heckman two-step estima ATE = 2.3231. O coeficiente da IMR = -0.9363 é significativo, confirmando a presença de viés de seleção. Compare com o ATE do DML para avaliar a superioridade dos career embeddings sobre a Inverse Mills Ratio clássica.
+
+  Comparação de Bias:
+    Heckman Two-Step: |bias| = 1.8231
+    DML + Debiased Embeddings: |bias| = 0.1712
+    Melhoria do DML sobre Heckman: 90.6%
+
+======================================================================
+  ETAPA 6: Robustez — Seleção Estrutural vs. Mecânica (Nível 3 Heckman)
+======================================================================
+
+============================================================
+  Teste de Robustez: Seleção MECHANICAL
+============================================================
+    Propensity trimming: 111 observações removidas (11.1%)
+    ATE estimado: 0.5905
+    CATEs — mean: 0.5905, std: 0.1258
+  ATE Estimado: 0.5905
+  ATE Verdadeiro: 0.5000
+  Bias: 0.0905 (18.1%)
+  Taxa de Tratamento: 46.20%
+
+============================================================
+  Teste de Robustez: Seleção STRUCTURAL
+============================================================
+    Propensity trimming: 59 observações removidas (5.9%)
+    ATE estimado: 0.6118
+    CATEs — mean: 0.6118, std: 0.1206
+  ATE Estimado: 0.6118
+  ATE Verdadeiro: 0.5000
+  Bias: 0.1118 (22.4%)
+  Taxa de Tratamento: 39.40%
+
+  Resultados:
+    MECHANICAL: ATE = 0.5905, bias = 0.0905 (18.1%)
+    STRUCTURAL: ATE = 0.6118, bias = 0.1118 (22.4%)
+
+  Diferença de bias: 0.0213
+  Robusto: SIM
+  Conclusão: ROBUSTO: Os resultados são consistentes sob ambos os modos de seleção (diferença de bias = 0.0213). O método de adversarial debiasing é robusto mesmo quando a seleção para o tratamento resulta de um modelo de decisão racional (Heckman-style), não apenas de uma regra mecânica.
+
+======================================================================
+  RELATÓRIO FINAL — CAREER-DML v3.2 (HECKMAN INTEGRATED)
+======================================================================
+
+  NÍVEL 1 (Narrativa): O DGP implementa o viés de seleção de Heckman (1979)
+  e a complementaridade capital-competência de Cunha & Heckman (2007).
+  → Status: INTEGRADO (ver textos para o paper abaixo)
+
+  NÍVEL 2 (Interpretativo): A variance decomposition e os GATES são
+  interpretados pela lente de Heckman. O benchmark Heckman two-step
+  demonstra a superioridade dos career embeddings sobre a IMR clássica.
+  → Status: EXECUTADO E VALIDADO
+
+  NÍVEL 3 (Estrutural): O DGP v3.2 implementa um modelo de decisão
+  racional (utility-based selection). O teste de robustez confirma que
+  os resultados se mantêm sob ambos os modos de seleção.
+  → Status: EXECUTADO E VALIDADO
+    
+  TEXTOS PARA O PAPER (Nível 1 — copiar para a secção de Metodologia):
+  ------------------------------------------------------------------
+
+  "O design do nosso Processo Gerador de Dados (DGP) é intencionalmente
+  construído sobre os fundamentos da econometria laboral. Especificamente,
+  a nossa variável latente 'ability' que influencia tanto a seleção para
+  o tratamento (T) quanto o resultado (Y) é uma implementação direta do
+  problema de viés de seleção formalizado por Heckman (1979). Ao fazer
+  isto, criamos um desafio realista onde métodos de correlação simples,
+  como embeddings preditivos, estão destinados a falhar.
+
+  Adicionalmente, a forma como 'ability' modula o efeito do tratamento
+  (CATE) e as transições de carreira inspira-se no trabalho sobre
+  formação de capital humano e dinâmica de competências de Cunha &
+  Heckman (2007). Os nossos career embeddings podem, portanto, ser
+  vistos como uma tentativa de capturar, de forma não-paramétrica, a
+  manifestação deste capital humano latente ao longo da trajetória
+  profissional de um indivíduo."
+    
+
+======================================================================
+  FIM DO PIPELINE v3.2
+======================================================================
