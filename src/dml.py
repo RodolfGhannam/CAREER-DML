@@ -217,8 +217,8 @@ class CausalDMLPipeline:
         t_stat, p_value = stats.ttest_ind(q5_cates, q1_cates, equal_var=False)
 
         # Effect size (Cohen's d)
-        pooled_std = np.sqrt((q1_cates.std()**2 + q5_cates.std()**2) / 2)
-        cohens_d = (q5_cates.mean() - q1_cates.mean()) / pooled_std if pooled_std > 0 else 0
+        pooled_std = np.sqrt((q1_cates.std()**2 + q5_cates.std()**2) / 2 + 1e-10)  # epsilon guard
+        cohens_d = (q5_cates.mean() - q1_cates.mean()) / pooled_std
 
         significant = p_value < 0.05
 

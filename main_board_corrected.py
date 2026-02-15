@@ -19,6 +19,9 @@ Date: February 2026
 import numpy as np
 import pandas as pd
 import torch
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 
 from src.semi_synthetic_dgp import SemiSyntheticDGP
@@ -239,6 +242,42 @@ def main():
 
     best = results[best_variant]
     X_best = best["embedding"]
+
+    # =========================================================================
+    # STEP 3b: Overlap Diagnostic (Board Review — Wager)
+    # =========================================================================
+    print_header("STEP 3b: Overlap Diagnostic (Propensity Score Distribution)")
+
+    from sklearn.ensemble import GradientBoostingClassifier as GBC_diag
+    ps_diag_model = GBC_diag(n_estimators=100, max_depth=3)
+    ps_diag_model.fit(X_best, T)
+    ps_scores = ps_diag_model.predict_proba(X_best)[:, 1]
+
+    fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+    ax.hist(ps_scores[T == 0], bins=30, alpha=0.6, label='Control (T=0)', color='#4A90D9')
+    ax.hist(ps_scores[T == 1], bins=30, alpha=0.6, label='Treated (T=1)', color='#E74C3C')
+    ax.axvline(x=0.05, color='gray', linestyle='--', linewidth=0.8, label='Trim bounds')
+    ax.axvline(x=0.95, color='gray', linestyle='--', linewidth=0.8)
+    ax.set_xlabel('Propensity Score P(T=1|X)')
+    ax.set_ylabel('Frequency')
+    ax.set_title('Overlap Diagnostic: Propensity Score Distribution by Treatment Group')
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig('results/figures/overlap_diagnostic.png', dpi=150)
+    plt.close()
+
+    pct_below_05 = (ps_scores < 0.05).mean() * 100
+    pct_above_95 = (ps_scores > 0.95).mean() * 100
+    pct_trimmed = pct_below_05 + pct_above_95
+    print(f"  Propensity score range: [{ps_scores.min():.4f}, {ps_scores.max():.4f}]")
+    print(f"  Mean (control): {ps_scores[T == 0].mean():.4f}")
+    print(f"  Mean (treated): {ps_scores[T == 1].mean():.4f}")
+    print(f"  % below 0.05: {pct_below_05:.1f}%")
+    print(f"  % above 0.95: {pct_above_95:.1f}%")
+    print(f"  Total trimmed: {pct_trimmed:.1f}%")
+    overlap_quality = 'GOOD' if pct_trimmed < 5 else ('MODERATE' if pct_trimmed < 20 else 'POOR')
+    print(f"  Overlap quality: {overlap_quality}")
+    print(f"  Saved: results/figures/overlap_diagnostic.png")
 
     # =========================================================================
     # STEP 4: Validation

@@ -97,7 +97,13 @@ class CausalGRU(nn.Module):
         self.hidden_dim = hidden_dim
 
     def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor) -> torch.Tensor:
-        """Reparameterization trick for VIB."""
+        """Reparameterization trick for VIB.
+
+        Includes logvar clamping for numerical stability, preventing
+        log(0) → -inf when sigma → 0 or sigma → inf.
+        Ref: Board Review (Veitch), Feb 2026.
+        """
+        logvar = torch.clamp(logvar, min=-10, max=10)  # Numerical guard
         if self.training:
             std = torch.exp(0.5 * logvar)
             eps = torch.randn_like(std)
