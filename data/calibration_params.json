@@ -1,0 +1,40 @@
+{
+  "source": "NLSY79 (yowie package) + Felten AIOE (2021)",
+  "n_individuals_nlsy79": 11730,
+  "n_observations_nlsy79": 206795,
+  "year_range": [
+    1979,
+    2018
+  ],
+  "mincer_regression": {
+    "intercept": 0.6702635359071525,
+    "beta_experience": 0.09891562658269971,
+    "beta_experience_sq": -0.001366806742094611,
+    "beta_education_years": 0.05379467081321076,
+    "beta_female": -0.19053407185976817,
+    "beta_black": -0.08441103646557027,
+    "beta_hispanic": 0.004076858978325278,
+    "r_squared": 0.5245311422754002,
+    "residual_variance": 0.3129403155126066,
+    "residual_std": 0.5594106859120646
+  },
+  "empirical_distributions": {
+    "female_proportion": 0.48235225567743156,
+    "black_proportion": 0.26263553244281296,
+    "hispanic_proportion": 0.17520041564091732,
+    "education_years_mean": 13.460492262572409,
+    "education_years_std": 2.5774771648488226,
+    "experience_mean": 11.662659359696852,
+    "experience_std": 9.776866984481149
+  },
+  "treatment_effect": {
+    "ate_baseline": 0.1,
+    "ate_description": "10% wage premium for high-AI-exposure transition (literature-based)"
+  },
+  "aioe": {
+    "n_occupations": 774,
+    "score_mean": -6.84754518031752e-09,
+    "score_std": 0.9999999991597438,
+    "treatment_threshold_q75": 1.014434
+  }
+}

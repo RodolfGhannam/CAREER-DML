@@ -1,0 +1,21 @@
+SYNTHETIC BASELINE RESULTS (v3.4.1)
+====================================
+True ATE: 0.5000
+Selection mode: structural
+
+COMPARATIVE TABLE:
+  Predictive GRU:              ATE=0.5378, SE=0.0520, bias=0.0378 (7.6%)  ← LOWEST BIAS
+  Causal GRU (VIB):            ATE=0.7996, SE=0.0595, bias=0.2996 (59.9%) ← HIGH BIAS
+  Debiased GRU (Adversarial):  ATE=0.5919, SE=0.0563, bias=0.0919 (18.4%)
+  Two-Stage Causal GRU:        ATE=0.6023, SE=0.0615, bias=0.1023 (20.5%)
+
+EMBEDDING PARADOX: YES
+  - Predictive (non-causal) embedding has LOWEST bias (7.6%)
+  - Causal VIB embedding has HIGHEST bias (59.9%)
+  - This is the central finding of the paper
+
+VALIDATION:
+  - Oster Delta: 13.66 (>2, robust)
+  - GATES: Monotonically increasing (Q1=0.508, Q5=0.566)
+  - GATES heterogeneity test: p=6.17e-206, Cohen's d=6.25
+  - Placebo tests: PASSED

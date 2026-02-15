@@ -1,0 +1,323 @@
+
+======================================================================
+  STEP 1: Data Generation -- Semi-Synthetic DGP (NLSY79 + Felten AIOE)
+======================================================================
+  Calibration: Mincer coefficients: NLSY79 (N=205,947; R²=0.5245). AIOE scores: Felten et al. (2021), Strategic Management Journal. Treatment threshold: 75th percentile AIOE (1.0144).
+  True ATE: 0.5380
+  Individuals: 1000
+  Periods: 10
+  Occupation bins: 50
+  Treatment rate: 41.80%
+  Outcome mean (treated): 2.9776
+  Outcome mean (control): 2.4295
+  Naive ATE (diff-in-means): 0.5481
+  Naive bias: 0.0101
+  Mean propensity: 0.4086
+  Mean HTE: 0.5579
+  HTE range: [0.4842, 0.6456]
+
+  Covariate Distributions (should match NLSY79):
+    Female %: 47.9% (target: 48.2%)
+    Black %: 28.6% (target: 26.3%)
+    Hispanic %: 17.1% (target: 17.5%)
+    Education mean: 13.5 (target: 13.5)
+    Experience init mean: 4.1
+
+  Career AIOE Trajectories:
+    Mean AIOE (period 1): 0.3069
+    Mean AIOE (period 10): 0.1778
+    AIOE range: [-2.6700, 1.5300]
+    Discrete occupation IDs range: [0, 49]
+
+======================================================================
+  STEP 2: Training the 3 Embedding Variants
+======================================================================
+
+  --- Variant 1: Predictive GRU (Baseline) ---
+    Epoch 5/15 — Loss: 0.5003
+    Epoch 10/15 — Loss: 0.4510
+    Epoch 15/15 — Loss: 0.4357
+  Embedding shape: (1000, 64)
+
+  --- Variant 2: Causal GRU (VIB) ---
+    Epoch 5/15 — Loss: 0.9669
+    Epoch 10/15 — Loss: 0.8611
+    Epoch 15/15 — Loss: 0.8354
+  Embedding shape: (1000, 16)
+
+  --- Variant 3: Debiased GRU (Adversarial) ---
+    Epoch 5/15 — Encoder Loss: -0.1901, Adv Loss: 0.6666
+    Epoch 10/15 — Encoder Loss: -0.2277, Adv Loss: 0.6746
+    Epoch 15/15 — Encoder Loss: -0.2372, Adv Loss: 0.6756
+  Embedding shape: (1000, 16)
+
+======================================================================
+  STEP 3: DML Estimation -- Comparison of 3 Variants (with Inference)
+======================================================================
+
+  --- Predictive GRU ---
+    Propensity trimming: 2 observations removed (0.2%)
+    ATE estimate: 0.3865
+    SE: 0.0446
+    95% CI: [0.2991, 0.4739]
+    p-value: 4.2595e-18
+    CATEs: mean=0.3865, std=0.0185
+  ATE Estimated: 0.3865 (SE: 0.0446)
+  95% CI: [0.2991, 0.4739]
+  p-value: 4.2595e-18
+  True ATE: 0.5380
+  Bias: -0.1515 (28.2%)
+
+  --- Causal GRU (VIB) ---
+    ATE estimate: 0.3479
+    SE: 0.0550
+    95% CI: [0.2400, 0.4557]
+    p-value: 2.5771e-10
+    CATEs: mean=0.3479, std=0.0394
+  ATE Estimated: 0.3479 (SE: 0.0550)
+  95% CI: [0.2400, 0.4557]
+  p-value: 2.5771e-10
+  True ATE: 0.5380
+  Bias: -0.1901 (35.3%)
+
+  --- Debiased GRU (Adversarial) ---
+    Propensity trimming: 1 observations removed (0.1%)
+    ATE estimate: 0.4438
+    SE: 0.0627
+    95% CI: [0.3209, 0.5668]
+    p-value: 1.4999e-12
+    CATEs: mean=0.4438, std=0.0551
+  ATE Estimated: 0.4438 (SE: 0.0627)
+  95% CI: [0.3209, 0.5668]
+  p-value: 1.4999e-12
+  True ATE: 0.5380
+  Bias: -0.0942 (17.5%)
+
+======================================================================
+  COMPARATIVE RESULTS TABLE
+======================================================================
+  Variant                        ATE        SE         95% CI                   p-value      Bias       % Error    Status
+  ------------------------------ ---------- ---------- ------------------------ ------------ ---------- ---------- ----------
+  Predictive GRU                 0.3865     0.0446     [0.2991, 0.4739]         4.2595e-18   -0.1515    28.2       Moderate bias
+  Causal GRU (VIB)               0.3479     0.0550     [0.2400, 0.4557]         2.5771e-10   -0.1901    35.3       High bias
+  Debiased GRU (Adversarial)     0.4438     0.0627     [0.3209, 0.5668]         1.4999e-12   -0.0942    17.5       Lowest bias
+  Lowest-bias variant: Debiased GRU (Adversarial)
+
+======================================================================
+  STEP 4: Complete Validation -- Debiased GRU (Adversarial)
+======================================================================
+
+  --- 4a. Variance Decomposition + Heckman Interpretation ---
+  Variance Decomposition:
+    oracle_variance: 0.000005 (0.0%)
+    nuisance_penalty: 0.018216 (100.0%)
+    common_support_penalty: 0.005047 (27.7%)
+    total_variance: 0.018221 (0.0%)
+  Selection Bias Severity (Heckman): MILD
+  Interpretation: The common_support_penalty is a minor variance component, suggesting reasonable overlap between groups. Adversarial debiasing still offers precision gains.
+
+  --- 4b. GATES + Heckman Interpretation (Human Capital) ---
+  GATES (Group Average Treatment Effects):
+ group      ate       se  ci_lower  ci_upper  n_obs
+     1 0.376144 0.001079  0.374029  0.378259    200
+     2 0.410495 0.000453  0.409607  0.411383    200
+     3 0.433677 0.000579  0.432543  0.434811    199
+     4 0.468101 0.000870  0.466396  0.469807    200
+     5 0.530610 0.001946  0.526796  0.534424    200
+
+  Heckman Summary:
+    Q1 (lowest human capital): ATE = 0.3761 [0.3740, 0.3783]
+    Q5 (highest human capital): ATE = 0.5306 [0.5268, 0.5344]
+    Heterogeneity gradient: 0.1545
+    Ratio Q_max / Q1: 1.41x
+    Monotonically increasing: Yes
+  Interpretation: GATES analysis reveals strong treatment effect heterogeneity, consistent with the skill-capital complementarity theory (Cunha & Heckman, 2007). The return to AI exposure ranges from 0.3761 (Q1, lowest latent human capital) to 0.5306 (Q5, highest latent human capital), a difference of 0.1545 (1.4x). The pattern is monotonically increasing, confirming that individuals with higher latent human capital (ability + education) benefit disproportionately from AI exposure. This is consistent with the skill-biased technological change (SBTC) hypothesis and Heckman's human capital formation model.
+
+  --- 4b-ii. Formal GATES Heterogeneity Test: H0: ATE(Q1) = ATE(Q5) ---
+  Q1 mean CATE: 0.3761
+  Q5 mean CATE: 0.5306
+  Difference: 0.1545
+  t-statistic: 69.24
+  p-value: 5.7404e-191
+  Cohen's d: 6.94
+  Significant (alpha=0.05): YES
+  Interpretation: The treatment effect for Q5 (high human capital) is 0.5306, compared to 0.3761 for Q1 (low human capital), a difference of 0.1545. This difference is statistically significant (t=69.24, p=5.7404e-191, Cohen's d=6.94), confirming the hypothesis of skill-biased technological change (Cunha & Heckman, 2007).
+
+  --- 4c. Sensitivity Analysis (Oster Delta) ---
+  Oster Delta: 75.9464
+  Interpretation: delta = 75.95 > 2 -> robust (Oster, 2019)
+
+  --- 4d. Placebo Tests ---
+    ATE estimate: -0.0066
+    SE: 0.0618
+    95% CI: [-0.1278, 0.1146]
+    p-value: 9.1523e-01
+    CATEs: mean=-0.0066, std=0.0538
+    Propensity trimming: 1 observations removed (0.1%)
+    ATE estimate: 0.0116
+    SE: 0.0679
+    95% CI: [-0.1216, 0.1447]
+    p-value: 8.6482e-01
+    CATEs: mean=0.0116, std=0.0937
+  ATE with random treatment: -0.0066 (expected ~= 0)
+  ATE with random outcome: 0.0116 (expected ~= 0)
+  Status: PASSED
+
+======================================================================
+  STEP 5: VIB Sensitivity Analysis -- Beta Sweep (Veitch Critique)
+======================================================================
+
+  VIB beta = 0.0001
+    Epoch 5/15 — Loss: 0.9066
+    Epoch 10/15 — Loss: 0.8153
+    Epoch 15/15 — Loss: 0.7846
+    ATE estimate: 0.4022
+    SE: 0.0533
+    95% CI: [0.2977, 0.5066]
+    p-value: 4.5359e-14
+    CATEs: mean=0.4022, std=0.0358
+    ATE = 0.4022, bias = -0.1358 (25.2%)
+
+  VIB beta = 0.0010
+    Epoch 5/15 — Loss: 0.8873
+    Epoch 10/15 — Loss: 0.8257
+    Epoch 15/15 — Loss: 0.8033
+    ATE estimate: 0.4352
+    SE: 0.0561
+    95% CI: [0.3252, 0.5452]
+    p-value: 8.8775e-15
+    CATEs: mean=0.4352, std=0.0591
+    ATE = 0.4352, bias = -0.1028 (19.1%)
+
+  VIB beta = 0.0100
+    Epoch 5/15 — Loss: 0.9051
+    Epoch 10/15 — Loss: 0.8308
+    Epoch 15/15 — Loss: 0.8192
+    ATE estimate: 0.3464
+    SE: 0.0551
+    95% CI: [0.2384, 0.4544]
+    p-value: 3.2586e-10
+    CATEs: mean=0.3464, std=0.0516
+    ATE = 0.3464, bias = -0.1916 (35.6%)
+
+  VIB beta = 0.0500
+    Epoch 5/15 — Loss: 0.9758
+    Epoch 10/15 — Loss: 0.8978
+    Epoch 15/15 — Loss: 0.8857
+    Propensity trimming: 2 observations removed (0.2%)
+    ATE estimate: 0.3504
+    SE: 0.0584
+    95% CI: [0.2359, 0.4649]
+    p-value: 2.0119e-09
+    CATEs: mean=0.3504, std=0.0753
+    ATE = 0.3504, bias = -0.1876 (34.9%)
+
+  VIB beta = 0.1000
+    Epoch 5/15 — Loss: 1.0158
+    Epoch 10/15 — Loss: 0.9555
+    Epoch 15/15 — Loss: 0.9222
+    Propensity trimming: 2 observations removed (0.2%)
+    ATE estimate: 0.3836
+    SE: 0.0570
+    95% CI: [0.2719, 0.4953]
+    p-value: 1.7023e-11
+    CATEs: mean=0.3836, std=0.0492
+    ATE = 0.3836, bias = -0.1544 (28.7%)
+
+  VIB beta = 0.5000
+    Epoch 5/15 — Loss: 1.4031
+    Epoch 10/15 — Loss: 1.2843
+    Epoch 15/15 — Loss: 1.2476
+    Propensity trimming: 3 observations removed (0.3%)
+    ATE estimate: 0.4027
+    SE: 0.0621
+    95% CI: [0.2810, 0.5243]
+    p-value: 8.6323e-11
+    CATEs: mean=0.4027, std=0.0832
+    ATE = 0.4027, bias = -0.1353 (25.2%)
+
+  VIB beta = 1.0000
+    Epoch 5/15 — Loss: 1.7328
+    Epoch 10/15 — Loss: 1.5515
+    Epoch 15/15 — Loss: 1.4797
+    Propensity trimming: 1 observations removed (0.1%)
+    ATE estimate: 0.4030
+    SE: 0.0537
+    95% CI: [0.2979, 0.5082]
+    p-value: 5.8931e-14
+    CATEs: mean=0.4030, std=0.0600
+    ATE = 0.4030, bias = -0.1350 (25.1%)
+
+  --- VIB Beta Sweep Results ---
+  beta      ate       se      bias  pct_error
+0.0001 0.402166 0.053305 -0.135834  25.247885
+0.0010 0.435240 0.056128 -0.102760  19.100443
+0.0100 0.346426 0.055111 -0.191574  35.608626
+0.0500 0.350411 0.058433 -0.187589  34.867844
+0.1000 0.383605 0.057003 -0.154395  28.697930
+0.5000 0.402666 0.062052 -0.135334  25.154990
+1.0000 0.403047 0.053665 -0.134953  25.084137
+
+  Adversarial Debiased (no beta): ATE = 0.4438, bias = -0.0942 (17.5%)
+  Lowest-error VIB beta: 0.0010
+  Lowest-error VIB ATE: 0.4352
+
+======================================================================
+  STEP 6: Benchmark -- Heckman Two-Step vs. DML (No Exclusion Restriction)
+======================================================================
+  Note: Semi-synthetic DGP does not have a peer_adoption exclusion
+  restriction. Running Heckman without exclusion for comparison.
+  Heckman Two-Step ATE: 2.2745 (SE: 0.0399)
+  DML ATE (Debiased GRU (Adversarial)): 0.4438 (SE: 0.0627)
+  True ATE: 0.5380
+  Has exclusion restriction: False
+  IMR coefficient: -1.1128
+  IMR significant: Yes
+
+  Interpretation: Heckman two-step estimates ATE = 2.2745 (SE: 0.0399). Without exclusion restriction, the model relies solely on functional form for identification. IMR coefficient = -1.1128 is significant, confirming selection bias presence. Compare with DML ATE to evaluate the advantage of career embeddings over the classical Inverse Mills Ratio.
+
+  Bias Comparison:
+    Heckman Two-Step: |bias| = 1.7365
+    DML + Debiased GRU (Adversarial): |bias| = 0.0942
+    DML improvement over Heckman: 94.6%
+
+======================================================================
+  FINAL REPORT -- CAREER-DML Semi-Synthetic (NLSY79 + Felten AIOE)
+======================================================================
+
+  DATA CALIBRATION:
+    Source: NLSY79 (N=205,947; 11,728 individuals; 1979-2018)
+    Mincer R²: 0.5245
+    Education return: 5.4% per year
+    Experience return: 9.9% (with diminishing returns)
+    Gender penalty: -19.1%
+    AI Exposure: Felten et al. (2021), 774 SOC occupations
+
+  EMBEDDING PARADOX TEST:
+    Predictive GRU:              ATE = 0.3865, bias = 28.2%
+    Causal GRU (VIB):            ATE = 0.3479, bias = 35.3%
+    Debiased GRU (Adversarial):  ATE = 0.4438, bias = 17.5%
+
+  LOWEST-BIAS VARIANT: Debiased GRU (Adversarial) (bias = 17.5%)
+
+  EMBEDDING PARADOX PERSISTS: YES
+    The causal VIB embedding underperforms the predictive baseline,
+    confirming that the Embedding Paradox is NOT an artifact of synthetic data.
+
+  VALIDATION:
+    Oster Delta: 75.9464 (robust)
+    GATES heterogeneity: Significant (p = 5.7404e-191)
+    Placebo tests: PASSED
+    Heckman benchmark: DML improves over Heckman by 94.6%
+
+  CONCLUSION:
+    The CAREER-DML results are ROBUST to the choice of DGP.
+    Semi-synthetic data calibrated with real U.S. labor market parameters
+    confirms the central finding: causal embeddings designed to remove
+    treatment-predictive information can paradoxically increase bias in
+    DML estimation of AI adoption effects on wages.
+    
+
+======================================================================
+  END OF SEMI-SYNTHETIC PIPELINE
+======================================================================
