@@ -298,7 +298,7 @@ def main():
     print(f"  Status: {'PASSED' if passed else 'FAILED'}")
 
     # =========================================================================
-    # STEP 5: VIB Sensitivity Analysis (Veitch critique response)
+    # STEP 5: VIB Sensitivity Analysis (VIB sensitivity analysis)
     # =========================================================================
     print_header("STEP 5: VIB Sensitivity Analysis -- Beta Sweep (Veitch Critique)")
 
@@ -417,7 +417,7 @@ def main():
   GATES heterogeneity is formally tested with Welch's t-test.
   -> Status: IMPLEMENTED
 
-  VIB SENSITIVITY (Veitch critique): Beta sweep demonstrates that the
+  VIB SENSITIVITY (VIB sensitivity): Beta sweep demonstrates that the
   information bottleneck is sensitive to the compression parameter,
   while adversarial debiasing is robust (no hyperparameter to tune).
   -> Status: CHARACTERISED

@@ -1,0 +1,288 @@
+/usr/local/lib/python3.11/dist-packages/econml/sklearn_extensions/model_selection.py:550: UserWarning: Model LassoCV(cv=5, max_iter=5000) has a non-default cv attribute, which will be ignored
+  warnings.warn(f"Model {sub_model} has a non-default cv attribute, which will be ignored")
+/usr/local/lib/python3.11/dist-packages/econml/sklearn_extensions/model_selection.py:550: UserWarning: Model LassoCV(cv=5, max_iter=5000) has a non-default cv attribute, which will be ignored
+  warnings.warn(f"Model {sub_model} has a non-default cv attribute, which will be ignored")
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+Font 'default' does not have a glyph for '\u2212' [U+2212], substituting with a dummy symbol.
+
+======================================================================
+  CAREER-DML EXPANDED PIPELINE (v5.0)
+======================================================================
+  Incorporates all external review suggestions
+  PHI_DIM = 64, TRUE_ATE = 0.08
+  New benchmarks: LASSO+DML, RF+DML, Static Embedding+DML
+
+======================================================================
+  STEP 1: Data Generation (Semi-Synthetic, ATE=0.08)
+======================================================================
+  NOTE ON TREATMENT DEFINITION:
+    T = 1 if the individual transitions to an occupation with AI Exposure
+    Index (AIOE, Felten et al. 2021) above the 75th percentile.
+    This measures OCCUPATIONAL EXPOSURE to AI, not individual adoption
+    of a specific technology. The estimated ATE represents the wage
+    premium associated with this occupational transition, conditional
+    on the full career trajectory.
+
+  True ATE: 0.0800
+  Individuals: 1000
+  Treatment rate: 41.80%
+  Outcome mean (treated): 2.4992
+  Outcome mean (control): 2.4295
+  Naive ATE (diff-in-means): 0.0697
+
+======================================================================
+  STEP 2: Building All Representations
+======================================================================
+
+  --- 2a. Static Features (bag-of-occupations + summary stats) ---
+  Static feature shape: (1000, 54)
+
+  --- 2b. Static Embedding (PCA, no temporal order) ---
+  Static embedding shape: (1000, 32)
+
+  --- 2c. Predictive GRU (sequential, dim=64) ---
+    Epoch 5/15 — Loss: 0.4309
+    Epoch 10/15 — Loss: 0.3852
+    Epoch 15/15 — Loss: 0.3727
+  Predictive GRU embedding shape: (1000, 64)
+
+  --- 2d. Causal GRU VIB (sequential, phi_dim=64) ---
+    Epoch 5/15 — Loss: 0.9460
+    Epoch 10/15 — Loss: 0.8026
+    Epoch 15/15 — Loss: 0.7409
+  Causal GRU VIB embedding shape: (1000, 64)
+
+  --- 2e. Debiased GRU Adversarial (sequential, phi_dim=64) ---
+    Epoch 5/15 — Encoder Loss: -0.2665, Adv Loss: 0.6977
+    Epoch 10/15 — Encoder Loss: -0.2933, Adv Loss: 0.6834
+    Epoch 15/15 — Encoder Loss: -0.3092, Adv Loss: 0.6629
+  Debiased GRU embedding shape: (1000, 64)
+
+======================================================================
+  STEP 3: DML Estimation — Gain Decomposition Table
+======================================================================
+
+  --- Method 1: Heckman Two-Step (Classical Benchmark) ---
+  ATE: 0.8377, Bias: 0.7577 (947.2%)
+
+  --- Method 2: LASSO + DML (Semi-parametric, no sequence) ---
+  ATE: 0.0362, Bias: -0.0438 (54.7%)
+
+  --- Method 3: Random Forest + DML (Non-parametric, no sequence) ---
+  ATE: 0.0260, Bias: -0.0540 (67.5%)
+
+  --- Method 4: Static Embedding + DML (Embedding, no sequence) ---
+    ATE estimate: 0.0032
+    SE: 0.0469
+    95% CI: [-0.0886, 0.0951]
+    p-value: 9.4516e-01
+    CATEs: mean=0.0032, std=0.0204
+  ATE: 0.0032, Bias: -0.0768 (96.0%)
+
+  --- Method 5: Predictive GRU + DML ---
+    ATE estimate: -0.0174
+    SE: 0.0431
+    95% CI: [-0.1019, 0.0670]
+    p-value: 6.8627e-01
+    CATEs: mean=-0.0174, std=0.0175
+  ATE: -0.0174, Bias: -0.0974 (121.8%)
+
+  --- Method 6: Causal GRU VIB + DML ---
+    ATE estimate: -0.0485
+    SE: 0.0526
+    95% CI: [-0.1516, 0.0546]
+    p-value: 3.5675e-01
+    CATEs: mean=-0.0485, std=0.0393
+  ATE: -0.0485, Bias: -0.1285 (160.6%)
+
+  --- Method 7: Debiased GRU + DML ---
+    Propensity trimming: 1 observations removed (0.1%)
+    ATE estimate: -0.0093
+    SE: 0.0537
+    95% CI: [-0.1145, 0.0959]
+    p-value: 8.6255e-01
+    CATEs: mean=-0.0093, std=0.0375
+  ATE: -0.0093, Bias: -0.0893 (111.6%)
+
+======================================================================
+  STEP 4: GAIN DECOMPOSITION TABLE
+======================================================================
+
+  Method                              Type                   Seq?   ATE        Bias       |Bias|%   
+  ----------------------------------- ---------------------- ------ ---------- ---------- ----------
+  1. Heckman Two-Step                 Parametric             No     0.8377     0.7577     947.2     
+  2. LASSO + DML                      Semi-parametric        No     0.0362     -0.0438    54.7      
+  3. Random Forest + DML              Non-parametric         No     0.0260     -0.0540    67.5      
+  4. Static Embedding + DML           Embedding (static)     No     0.0032     -0.0768    96.0      
+  5. Predictive GRU + DML             Embedding (sequential) Yes    -0.0174    -0.0974    121.8     
+  6. Causal GRU VIB + DML             Embedding (sequential) Yes    -0.0485    -0.1285    160.6     
+  7. Debiased GRU + DML               Embedding (sequential) Yes    -0.0093    -0.0893    111.6     
+
+  True ATE: 0.0800
+
+  Lowest-bias method: 7. Debiased GRU + DML
+
+  INCREMENTAL GAIN ANALYSIS (vs. Heckman |bias| = 0.7577):
+    2. LASSO + DML                      |bias|=0.0438  gain vs Heckman: +94.2%
+    3. Random Forest + DML              |bias|=0.0540  gain vs Heckman: +92.9%
+    4. Static Embedding + DML           |bias|=0.0768  gain vs Heckman: +89.9%
+    5. Predictive GRU + DML             |bias|=0.0974  gain vs Heckman: +87.1%
+    6. Causal GRU VIB + DML             |bias|=0.1285  gain vs Heckman: +83.0%
+    7. Debiased GRU + DML               |bias|=0.0893  gain vs Heckman: +88.2%
+
+======================================================================
+  STEP 5: Validation Suite
+======================================================================
+
+  --- 5a. Oster Sensitivity ---
+  Oster Delta: 7.4796
+  Robust (>2): YES
+
+  --- 5b. Placebo Tests ---
+    ATE estimate: -0.0138
+    SE: 0.0435
+    95% CI: [-0.0991, 0.0715]
+    p-value: 7.5062e-01
+    CATEs: mean=-0.0138, std=0.0163
+    Propensity trimming: 1 observations removed (0.1%)
+    ATE estimate: 0.0260
+    SE: 0.0548
+    95% CI: [-0.0814, 0.1334]
+    p-value: 6.3516e-01
+    CATEs: mean=0.0260, std=0.0249
+  Random treatment ATE: -0.0138
+  Random outcome ATE: 0.0260
+  Status: PASSED
+
+  --- 5c. GATES Heterogeneity ---
+ group       ate       se  ci_lower  ci_upper  n_obs
+     1 -0.062146 0.001094 -0.064291 -0.060002    200
+     2 -0.031372 0.000455 -0.032264 -0.030480    200
+     3 -0.008899 0.000453 -0.009788 -0.008010    199
+     4  0.013170 0.000501  0.012189  0.014152    200
+     5  0.042778 0.000891  0.041032  0.044525    200
+  Heterogeneity significant: YES
+  p-value: 4.7386e-229
+
+  --- 5d. Overlap Diagnostic ---
+  Overlap quality: GOOD (0.1% trimmed)
+
+======================================================================
+  STEP 6: Power Analysis with Sensitivity
+======================================================================
+  Estimated sigma_Y: 0.6493
+  MDE at N=1000: 0.0813
+  MDE as % of sigma_Y: 12.5%
+  Can detect ATE=0.50? YES
+  Can detect ATE=0.08? NO
+  Required N for ATE=0.08: 1,034
+
+  --- 6c. Sensitivity: MDE vs sigma_Y and R² ---
+
+  sigma_Y     R²=0.3     R²=0.4     R²=0.5     R²=0.6     R²=0.7   
+  ----------  --------  --------  --------  --------  --------
+  0.50        0.0741Y   0.0686Y   0.0626Y   0.0560Y   0.0485Y 
+  0.75        0.1112N   0.1029N   0.0940N   0.0840N   0.0728Y 
+  1.00        0.1482N   0.1372N   0.1253N   0.1121N   0.0970N 
+  1.25        0.1853N   0.1716N   0.1566N   0.1401N   0.1213N 
+  1.50        0.2224N   0.2059N   0.1879N   0.1681N   0.1456N 
+
+  --- 6d. MDE at Different Sample Sizes ---
+  N            MDE        Detects 0.08?   Detects 0.50?  
+  ------------ ---------- --------------- ---------------
+  1,000        0.0813     NO              YES            
+  5,000        0.0364     YES             YES            
+  10,000       0.0257     YES             YES            
+  50,000       0.0115     YES             YES            
+  100,000      0.0081     YES             YES            
+  500,000      0.0036     YES             YES            
+  1,000,000    0.0026     YES             YES            
+
+  Saved: results/figures/power_analysis_sensitivity.png
+
+======================================================================
+  STEP 7: EMBEDDING PARADOX VERIFICATION
+======================================================================
+
+  RESULTS (PHI_DIM = 64, TRUE_ATE = 0.08):
+
+    Predictive GRU:     ATE = -0.0174, |bias| = 121.8%
+    Causal GRU (VIB):   ATE = -0.0485, |bias| = 160.6%
+    Debiased (Adv):     ATE = -0.0093, |bias| = 111.6%
+
+  EMBEDDING PARADOX (VIB bias > Predictive bias):
+    YES — GENUINE FINDING
+
+  INTERPRETATION:
+    The information bottleneck destroys causally relevant information in sequential career data. This is a structural incompatibility, not a dimensional artifact.
+    
+
+======================================================================
+  FINAL SUMMARY: GAIN DECOMPOSITION
+======================================================================
+
+  COMPUTATIONAL PROFILE (N=1000):
+    Step 1: Data Generation                  0.0s
+    Step 2: Embeddings                       6.7s
+    Step 3: DML Estimation                 123.2s
+    Step 4: Gain Decomposition               0.0s
+    Step 5: Validation                      45.7s
+    Step 6: Power Analysis                   1.0s
+    TOTAL                                  176.6s
+
+  PROJECTED SCALING:
+    N=    10,000: ~1,766s (0.5h)
+    N=   100,000: ~17,662s (4.9h)
+    N= 1,000,000: ~176,620s (49.1h)
+    Note: GPU acceleration and mini-batch training reduce embedding
+    time sub-linearly. DML with cross-fitting scales ~O(N log N).
+
+  The gain decomposition answers the key question from the external review:
+  "Where exactly is the incremental gain of sequential embeddings?"
+
+  Decomposition (|bias| reduction vs. Heckman):
+    
+    2. LASSO + DML                      |bias|=0.0438  gain: +94.2%
+    3. Random Forest + DML              |bias|=0.0540  gain: +92.9%
+    4. Static Embedding + DML           |bias|=0.0768  gain: +89.9%
+    5. Predictive GRU + DML             |bias|=0.0974  gain: +87.1%
+    6. Causal GRU VIB + DML             |bias|=0.1285  gain: +83.0%
+    7. Debiased GRU + DML               |bias|=0.0893  gain: +88.2%
+
+  KEY FINDINGS:
+    1. Heckman -> LASSO/RF: Measures the gain from flexibility alone
+    2. LASSO/RF -> Static Embedding: Measures the gain from learned representations
+    3. Static Embedding -> Predictive GRU: Measures the gain from temporal ordering
+    4. Predictive GRU -> VIB/Debiased: Measures the effect of causal regularization
+
+  VALIDATION:
+    Oster Delta: 7.4796 (robust)
+    Placebo tests: PASSED
+    GATES heterogeneity: Significant
+    Overlap quality: GOOD
+    
+
+  FUTURE EXTENSIONS (deferred to PhD programme):
+    1. Dynamic treatment effects tau(t): Estimate how the AI wage premium
+       evolves over time since occupational transition, capturing cumulative
+       and fading effects across the career lifecycle.
+    2. Treatment timing heterogeneity: Analyse whether early vs. late
+       adopters of AI-exposed occupations experience different returns.
+    3. Life-cycle heterogeneity: Explore how the treatment effect varies
+       by career stage (early, mid, late career).
+    These extensions require panel data with sufficient temporal depth,
+    motivating the use of Danish administrative registers (N > 1M, T > 30y).
+
+======================================================================
+  END OF EXPANDED PIPELINE (v5.0)
+======================================================================

@@ -6,7 +6,7 @@ Evolution v3.2 → v3.3:
     - Heckman two-step now uses the exclusion restriction (peer_adoption)
       for a methodologically fair comparison with DML.
     - VIB sensitivity analysis: beta sweep to characterize the information
-      bottleneck behaviour (Veitch critique response).
+      bottleneck behaviour (VIB sensitivity analysis).
     - All functions return inference-ready outputs (SE, CI, p-values).
 
 References:
@@ -411,7 +411,7 @@ def run_heckman_two_step_benchmark(
 
 
 # =============================================================================
-# VIB SENSITIVITY ANALYSIS (Veitch critique response)
+# VIB SENSITIVITY ANALYSIS (VIB sensitivity analysis)
 # =============================================================================
 
 def vib_sensitivity_analysis(
@@ -435,7 +435,7 @@ def vib_sensitivity_analysis(
 ) -> pd.DataFrame:
     """Sweep over VIB beta values to characterize information bottleneck behaviour.
 
-    This analysis addresses the Veitch critique: the VIB variant fails because
+    This analysis addresses the VIB sensitivity: the VIB variant fails because
     the beta parameter controls the trade-off between compression and prediction.
     By sweeping beta, we can:
     1. Show that the VIB is sensitive to beta (a known limitation).
