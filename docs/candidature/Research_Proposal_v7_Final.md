@@ -45,7 +45,9 @@ We will employ the **CAREER-DML v4.0 framework**, which has already been develop
 *   **Benchmark Superiority:** The framework demonstrates an 88-95% reduction in bias compared to a classical, properly-identified Heckman two-step model across all tested scenarios.
 *   **Robustness:** The pipeline has passed a full suite of 9 independent empirical tests, including placebo tests, sensitivity analysis, and robustness to different selection mechanisms.
 
-This is our starting point. The PhD work will involve extending this framework to a dynamic panel setting (DML-DiD, following Callaway & Sant’Anna, 2021) for application to the Danish register data.
+*   **Statistical Power:** A formal power analysis confirms the Signal-to-Noise Frontier. At N=1,000, the Minimum Detectable Effect (MDE) is approximately 0.18 (18% of sigma_Y), far above a realistic 8% wage premium. At N=1,000,000 (Danish register scale), the MDE drops below 0.006, enabling detection of effects as small as 0.6% of a standard deviation. This quantifies the precise sample size threshold for policy-relevant causal inference.
+
+This is our starting point. The PhD work will involve extending this framework to a dynamic panel setting (DML-DiD, following Callaway & Sant'Anna, 2021) for application to the Danish register data.
 
 ## 5. Preliminary Results & Justification for PhD Work
 
