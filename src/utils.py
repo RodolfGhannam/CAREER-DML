@@ -2,7 +2,7 @@
 CAREER-DML: Utility Functions
 Common functions shared across pipeline scripts.
 
-Extracted from main.py to eliminate code duplication (Board Review R1.6a).
+Extracted from main.py to eliminate code duplication.
 """
 
 import numpy as np

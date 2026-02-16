@@ -9,7 +9,7 @@ This DGP replaces the fully synthetic DGP in the CAREER-DML pipeline.
 Instead of arbitrary parameters, every coefficient and distribution is
 empirically grounded in real U.S. labor market data.
 
-Design Principles (Board-approved):
+Design Principles:
   1. Covariates (X) are drawn from NLSY79 empirical distributions
   2. Wage equation follows the estimated Mincer regression (R²=0.5245)
   3. Career sequences use real AIOE scores mapped to synthetic occupation trajectories

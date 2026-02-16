@@ -3,7 +3,7 @@
 Tests verify that the CausalDMLPipeline wrapper produces valid
 ATE estimates with proper inference objects.
 
-Updated for v4.0 interface (Board Review, Feb 2026).
+Updated for v4.0 interface.
 """
 
 import sys

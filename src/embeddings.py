@@ -101,7 +101,7 @@ class CausalGRU(nn.Module):
 
         Includes logvar clamping for numerical stability, preventing
         log(0) → -inf when sigma → 0 or sigma → inf.
-        Ref: Board Review (Veitch), Feb 2026.
+        Added for numerical stability in edge cases.
         """
         logvar = torch.clamp(logvar, min=-10, max=10)  # Numerical guard
         if self.training:
@@ -145,7 +145,7 @@ class DebiasedGRU(nn.Module):
     is penalized for the adversary's success.
 
     Empirically, this variant achieves the lowest bias across multiple DGP
-    configurations (see BOARD_ANALYSIS.md for detailed results).
+    configurations.
 
     Architecture:
         Embedding → GRU → Linear(phi_dim) → phi

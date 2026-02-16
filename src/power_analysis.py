@@ -4,9 +4,9 @@ CAREER-DML: Statistical Power Analysis Module
 Computes the minimum detectable effect (MDE) for the DML estimator
 given sample size, noise level, and significance level.
 
-This module addresses Board Review finding R2.3:
-"The Signal-to-Noise Frontier should be quantified with a formal
-power calculation, not just observed empirically."
+Formalises the Signal-to-Noise Frontier by computing the minimum
+effect size detectable at a given sample size, significance level,
+and power.
 
 Reference:
     Chernozhukov et al. (2018), "Double/Debiased Machine Learning

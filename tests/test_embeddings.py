@@ -4,7 +4,7 @@ Tests verify that each of the three embedding architectures
 (Predictive, Causal VIB, Debiased Adversarial) produces
 well-formed embeddings with expected dimensionality.
 
-Updated for v4.0 interface (Board Review, Feb 2026).
+Updated for v4.0 interface.
 """
 
 import sys

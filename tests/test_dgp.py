@@ -4,7 +4,7 @@ Tests verify that the synthetic DGP produces data with the expected
 statistical properties: correct dimensions, treatment assignment,
 selection mechanism, and exclusion restriction.
 
-Updated for v4.0 interface (Board Review, Feb 2026).
+Updated for v4.0 interface.
 """
 
 import sys

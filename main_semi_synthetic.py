@@ -349,7 +349,7 @@ def main():
     # =========================================================================
     # STEP 5: VIB Sensitivity Analysis (Beta Sweep)
     # =========================================================================
-    print_header("STEP 5: VIB Sensitivity Analysis -- Beta Sweep (Veitch Critique)")
+    print_header("STEP 5: VIB Sensitivity Analysis -- Beta Sweep (VIB Sensitivity)")
 
     vib_results = vib_sensitivity_analysis(
         model_class=CausalGRU,

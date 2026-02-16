@@ -1,7 +1,7 @@
 """
-CAREER-DML: Board-Corrected Semi-Synthetic Pipeline
+CAREER-DML: Corrected Semi-Synthetic Pipeline
 =====================================================
-Implements the two CRITICAL decisions from the 3-Layer Board Analysis:
+Implements two key robustness corrections:
 
   1. PHI_DIM = 64 (same as HIDDEN_DIM) — eliminates the dimensional confound
      that could explain the Embedding Paradox as an artifact.
@@ -11,8 +11,6 @@ Implements the two CRITICAL decisions from the 3-Layer Board Analysis:
 If the Embedding Paradox persists with equal dimensions and a realistic ATE,
 it is a GENUINE scientific finding. If it disappears, it was an artifact.
 
-Board: Dr. Tom Gard (President), Rodolf Mikel Ghannam Neto (Co-President)
-Consultants: Victor Veitch, Stefan Wager, James Heckman (theoretical perspectives)
 Date: February 2026
 """
 
@@ -53,7 +51,7 @@ HIDDEN_DIM = 64
 PHI_DIM = 64  # Was 16 — now equal to HIDDEN_DIM
 
 # BOARD DECISION 2: TRUE_ATE = 0.08 (realistic 8% wage premium)
-BOARD_TRUE_ATE = 0.08
+CORRECTED_TRUE_ATE = 0.08
 
 EPOCHS = 15
 BATCH_SIZE = 64
@@ -102,21 +100,21 @@ def print_subheader(title):
 
 def main():
     print_header("BOARD-CORRECTED PIPELINE")
-    print(f"  Board Decision 1: PHI_DIM = {PHI_DIM} (was 16)")
-    print(f"  Board Decision 2: TRUE_ATE = {BOARD_TRUE_ATE} (was 0.538)")
+    print(f"  Correction 1: PHI_DIM = {PHI_DIM} (was 16)")
+    print(f"  Correction 2: TRUE_ATE = {CORRECTED_TRUE_ATE} (was 0.538)")
     print(f"  Purpose: Test if Embedding Paradox is genuine or dimensional artifact")
 
     # =========================================================================
     # STEP 1: Generate data with corrected TRUE_ATE
     # =========================================================================
-    print_header("STEP 1: Data Generation (Board-Corrected ATE)")
+    print_header("STEP 1: Data Generation (Corrected ATE)")
 
     dgp = SemiSyntheticDGP(n_individuals=N_INDIVIDUALS, n_periods=N_PERIODS, seed=SEED)
 
     # Override TRUE_ATE in the DGP module before generating
     import src.semi_synthetic_dgp as dgp_module
     original_ate = dgp_module.TRUE_ATE
-    dgp_module.TRUE_ATE = BOARD_TRUE_ATE
+    dgp_module.TRUE_ATE = CORRECTED_TRUE_ATE
 
     data = dgp.generate()
 
@@ -126,7 +124,7 @@ def main():
     career_aioe = data["career_sequences"]
     Y = data["Y"]
     T = data["T_treatment"].astype(int)
-    true_ate = BOARD_TRUE_ATE  # Use Board-corrected value
+    true_ate = CORRECTED_TRUE_ATE  # Use Corrected value
     propensity = data["propensity"]
     hte = data["hte"]
     covariates = data["covariates"]
@@ -142,7 +140,7 @@ def main():
     )
     loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-    print(f"  True ATE (Board-corrected): {true_ate:.4f}")
+    print(f"  True ATE (Corrected): {true_ate:.4f}")
     print(f"  Individuals: {N_INDIVIDUALS}")
     print(f"  Treatment rate: {T.mean():.2%}")
     print(f"  Outcome mean (treated): {Y[T == 1].mean():.4f}")
@@ -189,7 +187,7 @@ def main():
     # =========================================================================
     # STEP 3: DML Estimation
     # =========================================================================
-    print_header("STEP 3: DML Estimation (Board-Corrected)")
+    print_header("STEP 3: DML Estimation (Corrected)")
 
     variants = {
         "Predictive GRU (dim=64)": X_pred,
@@ -244,7 +242,7 @@ def main():
     X_best = best["embedding"]
 
     # =========================================================================
-    # STEP 3b: Overlap Diagnostic (Board Review — Wager)
+    # STEP 3b: Overlap Diagnostic (Overlap diagnostic)
     # =========================================================================
     print_header("STEP 3b: Overlap Diagnostic (Propensity Score Distribution)")
 
@@ -380,7 +378,7 @@ def main():
     paradox_persists = vib_err > pred_err
 
     print(f"""
-  BOARD-CORRECTED RESULTS (PHI_DIM = 64, TRUE_ATE = {BOARD_TRUE_ATE}):
+  BOARD-CORRECTED RESULTS (PHI_DIM = 64, TRUE_ATE = {CORRECTED_TRUE_ATE}):
 
     Predictive GRU:     ATE = {results[pred_name]['ate']:.4f}, bias = {pred_err:.1f}%
     Causal GRU (VIB):   ATE = {results[vib_name]['ate']:.4f}, bias = {vib_err:.1f}%

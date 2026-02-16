@@ -3,7 +3,7 @@
 This test runs a minimal version of the full pipeline (small n, few epochs)
 to verify that all components work together without errors.
 
-Updated for v4.0 interface (Board Review, Feb 2026).
+Updated for v4.0 interface.
 """
 
 import sys
