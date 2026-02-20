@@ -1,10 +1,10 @@
-# CAREER-DML: Synthetic vs. Semi-Synthetic Results Comparison
+# CAREER-DML: Synthetic vs. Semi-Synthetic Results Comparison (v6.0)
 
 ## Executive Summary
 
-The CAREER-DML pipeline was executed with two distinct Data Generating Processes (DGPs) to test whether the Embedding Paradox — the finding that causal embeddings designed to remove treatment-predictive information paradoxically increase bias in DML estimation — is robust to real-world data calibration.
+The CAREER-DML pipeline was executed with two distinct Data Generating Processes (DGPs) to test whether the **Sequential Embedding Ordering Phenomenon** — the empirical finding that causally-motivated embeddings paradoxically increase bias in DML estimation for this domain — is robust to real-world data calibration.
 
-The Embedding Paradox persists with semi-synthetic data calibrated from NLSY79 and Felten et al. (2021) AIOE scores, confirming the finding is not an artifact of the synthetic DGP.
+The ordering phenomenon persists with semi-synthetic data calibrated from NLSY79 and Felten et al. (2021) AIOE scores, confirming the finding is not an artifact of a purely synthetic DGP.
 
 ---
 
@@ -48,7 +48,7 @@ The Embedding Paradox persists with semi-synthetic data calibrated from NLSY79 a
 
 ## Key Findings
 
-### 1. Embedding Paradox Confirmed
+### 1. Embedding Ordering Phenomenon Confirmed
 
 In both DGPs, the Causal GRU (VIB) embedding produces the highest bias among all variants:
 
@@ -57,67 +57,17 @@ In both DGPs, the Causal GRU (VIB) embedding produces the highest bias among all
 | Synthetic | 59.9% | 7.6% | 7.9x worse |
 | Semi-Synthetic | 35.3% | 28.2% | 1.3x worse |
 
-The embedding specifically designed for causal inference (VIB) consistently underperforms simpler alternatives. This is consistent with the theoretical argument that the information bottleneck removes treatment-predictive information that is also needed for confounding adjustment in sequential career data.
+This consistent ordering, where the theoretically-causal embedding underperforms, is the core of the **Sequential Embedding Ordering Phenomenon**. It is consistent with the hypothesis that the information bottleneck removes treatment-predictive information that is also needed for confounding adjustment in sequential career data.
 
 ### 2. Debiased (Adversarial) Emerges as Best in Semi-Synthetic
 
 An important nuance emerges from the semi-synthetic results. In the synthetic setting, the Predictive GRU wins (7.6% bias), but in the semi-synthetic setting, the Debiased GRU (Adversarial) wins (17.5% bias). This suggests that with more realistic confounding structures calibrated from real labor market data, the adversarial debiasing approach becomes more valuable.
 
-### 3. All Estimates Underestimate in Semi-Synthetic
-
-In the synthetic DGP, all variants overestimate the ATE (positive bias). In the semi-synthetic DGP, all variants underestimate (negative bias). This directional shift is consistent with the more complex confounding structure in the NLSY79-calibrated data, where career AIOE trajectories create sequential confounding that is harder to fully adjust for.
-
-### 4. Validation Metrics Comparison
-
-| Metric | Synthetic | Semi-Synthetic |
-|--------|-----------|----------------|
-| Oster Delta | 13.66 | 75.95 |
-| GATES Heterogeneity | p = 6.17e-206 | p = 5.74e-191 |
-| GATES Gradient (Q5-Q1) | 0.058 | 0.155 |
-| GATES Ratio (Q5/Q1) | 1.11x | 1.41x |
-| GATES Monotonic | Yes | Yes |
-| Placebo Tests | Passed | Passed |
-| DML vs Heckman improvement | Varies | 94.6% |
-
-The semi-synthetic data shows stronger heterogeneity (gradient of 0.155 vs 0.058), consistent with the richer covariate structure creating more variation in treatment effects. The Oster delta of 75.95 indicates the results are robust to unobserved confounding.
-
-### 5. VIB Sensitivity Analysis
-
-| Beta | Synthetic ATE | Synthetic Bias | Semi-Synthetic ATE | Semi-Synthetic Bias |
-|------|--------------|----------------|--------------------|--------------------|
-| 0.0001 | 0.706 | 41.2% | 0.402 | 25.2% |
-| 0.001 | 0.712 | 42.5% | 0.435 | 19.1% |
-| 0.01 | 0.738 | 47.6% | 0.346 | 35.6% |
-| 0.05 | — | — | 0.350 | 34.9% |
-| 0.1 | — | — | 0.384 | 28.7% |
-| 0.5 | — | — | 0.403 | 25.2% |
-| 1.0 | — | — | 0.403 | 25.1% |
-
-The VIB is sensitive to the beta parameter in both settings, confirming that the information bottleneck trade-off is non-trivial for sequential data.
-
-### 6. Heckman Benchmark
-
-The DML approach with Debiased GRU embeddings achieves 94.6% lower bias than the Heckman two-step estimator in the semi-synthetic setting (without exclusion restriction), demonstrating the practical value of career embeddings over classical selection correction methods.
-
 ---
 
 ## Implications
 
-The Embedding Paradox is not an artifact of synthetic data. It persists when the DGP is calibrated with real U.S. labor market parameters from NLSY79 and Felten et al. (2021) AI exposure scores. The adversarial debiasing approach shows particular promise for real-world applications. The stronger GATES gradient in semi-synthetic data (1.41x vs 1.11x) suggests that AI adoption effects are more heterogeneous in realistic settings, supporting the need for CATE estimation. These results motivate the proposed research using Danish registry data, where the full population panel would provide richer career trajectories for embedding-based causal inference.
-
----
-
-## Technical Details
-
-| Parameter | Value |
-|:---|:---|
-| Pipeline | CAREER-DML v4.0 |
-| Semi-synthetic module | `src/semi_synthetic_dgp.py` |
-| Integration script | `main_semi_synthetic.py` |
-| Discretisation | Continuous AIOE scores to 50 occupation bins (percentile-based) |
-| Random seed | 42 |
-| Epochs | 15 (all embedding variants) |
-| DML | CausalForestDML, 500 estimators, propensity trimming [0.05, 0.95] |
+The **Sequential Embedding Ordering Phenomenon** is not an artifact of synthetic data. It persists when the DGP is calibrated with real U.S. labor market parameters from NLSY79 and Felten et al. (2021) AI exposure scores. The adversarial debiasing approach shows particular promise for real-world applications. The stronger GATES gradient in semi-synthetic data (1.41x vs 1.11x) suggests that AI adoption effects are more heterogeneous in realistic settings, supporting the need for CATE estimation. These results motivate the proposed research using Danish registry data, where the full population panel would provide richer career trajectories for embedding-based causal inference.
 
 ---
 
