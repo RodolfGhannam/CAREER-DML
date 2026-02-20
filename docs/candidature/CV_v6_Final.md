@@ -45,7 +45,9 @@ Developed **CAREER-DML**, a novel framework for causal inference on career traje
 2. **Signal-to-Noise Frontier:** Characterized the sample size requirements for detecting realistic effect sizes (N > 1,034 for ATE = 0.08), providing a rigorous justification for the use of large-scale administrative data.
 3. **Structural Bridge:** Built an explicit conceptual bridge to the structural econometrics tradition, showing how the learned embeddings serve as non-parametric analogs of classical latent variables (Ben-Porath, Mincer, Autor, Keane & Wolpin).
 
-**Validation:** The framework outperforms classical methods like Heckman selection models, **reducing estimation bias by an order of magnitude (from 945% to 7.6%)**. Open-source implementation available on [GitHub](https://github.com/RodolfGhannam/CAREER-DML). A formal GATES heterogeneity test confirms statistically significant skill-biased treatment effects.
+**Validation:** The framework outperforms all seven benchmarked methods—from classical Heckman to modern LASSO and Random Forest approaches—**reducing estimation bias by an order of magnitude (from 945% to 7.6%)**. Linear probing experiments confirm that the learned embeddings encode interpretable economic structure (occupation, industry, tenure) without being explicitly trained on these labels. A formal GATES heterogeneity test confirms statistically significant skill-biased treatment effects. Open-source implementation available on [GitHub](https://github.com/RodolfGhannam/CAREER-DML).
+
+**Next Step:** Apply the validated framework to the Danish IDA registers (N > 1M individuals, T > 30 years)—crossing the Signal-to-Noise Frontier with population-scale administrative data to produce the first causal estimates of how AI adoption reshapes individual career trajectories across Denmark.
 
 ### MIT Capstone Project: AI Triage System
 

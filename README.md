@@ -75,7 +75,7 @@ This dialogue is not merely rhetorical. Linear probing experiments confirm that 
 
 ## 4. The Central Question: What Happens at Population Scale?
 
-The proof-of-concept reaches a productive limit at survey scale. The central question for the PhD is whether these patterns hold when the framework confronts population-scale administrative data.
+The proof-of-concept reaches a productive limit at survey scale. With 34.7% of the Danish workforce already exposed to generative AI in tasks representing 20% or more of their work hours (OECD, 2024), the central question for the PhD is whether these patterns hold when the framework confronts population-scale administrative data.
 
 **The Danish IDA registers** (Integrated Database for Labour Market Research, Statistics Denmark) provide:
 - **Scale:** N > 1,000,000 individuals—over 1,000× the Signal-to-Noise Frontier threshold
