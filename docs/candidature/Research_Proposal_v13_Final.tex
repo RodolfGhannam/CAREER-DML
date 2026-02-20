@@ -1,0 +1,108 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{natbib}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+% --- Page Style ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\thepage}
+
+% --- Section Formatting ---
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.4em}
+\titlespacing*{\subsection}{0pt}{0.8em}{0.3em}
+
+% --- Spacing ---
+\setstretch{1.15}
+\setlength{\parskip}{0.5em}
+
+\begin{document}
+
+% --- Title ---
+\begin{center}
+{\Large\bfseries PhD Project Description}\\[0.6em]
+{\large CAREER-DML: Causal Embeddings for Labor Market Analysis}\\[0.8em]
+{\normalsize Rodolf Mikel Ghannam Neto}\\
+{\small \href{mailto:rodolf@cical.com.br}{rodolf@cical.com.br} $\cdot$ \href{https://github.com/RodolfGhannam/CAREER-DML}{github.com/RodolfGhannam/CAREER-DML}}\\[0.3em]
+{\small\itshape Application to the PhD Programme in Strategy and Innovation\\Copenhagen Business School}
+\end{center}
+
+\vspace{0.3em}
+
+% ============================================================
+\section{Research Purpose and Motivation}
+% ============================================================
+
+What is the causal impact of a strategic job move on an individual's long-term earnings trajectory? This question is central to labor economics and corporate strategy, yet notoriously difficult to answer due to fundamental selection bias. My research addresses this gap by developing and validating a novel framework, \textsc{career-dml}, designed for causal inference on sequential data. The framework stands as a bridge between the \textbf{two cultures of modern econometrics}---causal Machine Learning and structural modeling---by combining deep sequence embeddings with the semiparametric efficiency guarantees of Double Machine Learning (DML) \citep{Chernozhukov2018}.
+
+This project is directly motivated by my 15+ years of executive experience, where I observed significant heterogeneity in employee development needs, highlighting the critical need for methods that can move beyond average effects. This proposal therefore aligns directly with the CBS Strategy & Innovation department's research agenda on ``Digital Transformations'' and ``AI adoption and careers,'' leveraging my practitioner-researcher background to apply advanced quantitative methods to large-scale administrative data.
+
+% ============================================================
+\section{Core Contributions and Positioning}
+% ============================================================
+
+This research makes three core contributions that form the basis of the proposed PhD project:
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=0.2em, topsep=0.2em]
+    \item \textbf{The Sequential Embedding Ordering Phenomenon:} We document a robust empirical finding that causally-motivated embeddings (e.g., VIB) consistently yield \textit{more} estimation bias than simpler predictive embeddings in this domain. This challenges the direct application of some causal representation learning methods to socio-economic trajectories.
+    \item \textbf{The Signal-to-Noise Frontier:} We characterize the sample size requirements for detecting realistic effect sizes, providing a rigorous, data-driven justification for the necessity of large-scale administrative data (N > 1,034) over typical survey data.
+    \item \textbf{A Bridge Between Two Cultures:} We build an explicit conceptual bridge between causal ML and the structural econometrics tradition, showing how our learned embeddings serve as non-parametric analogs of classical latent variables (e.g., human capital \`a la \citet{BenPorath1967}, latent types \`a la \citet{Keane1997}).
+\end{enumerate}
+
+% ============================================================
+\section{Methodology and Data}
+% ============================================================
+
+\subsection{The CAREER-DML Framework}
+The pipeline proceeds in two stages: (1) A Gated Recurrent Unit (GRU) learns a fixed-length embedding vector $z_i \in \mathbb{R}^{64}$ from an individual's career history; (2) The \texttt{CausalForestDML} estimator \citep{econml} uses these embeddings as high-dimensional controls to estimate the causal effect $\theta$ in the partially linear model $Y = \theta T + g(z) + \epsilon$.
+
+\subsection{Data Source Note}
+This project has been validated on a semi-synthetic Data Generating Process (DGP) calibrated with real-world US labor market data (NLSY79) and AI exposure scores \citep{Felten2021}. The primary data source for the PhD will be the Danish Integrated Database for Labour Market Research (IDA), which provides longitudinal employer-employee matched records for the entire Danish population.
+
+\textbf{Note on the Generative AI Shock:} The reliance on the 2021 AIOE scores is a deliberate methodological choice. It provides a clean, pre-treatment baseline right before the major structural shift caused by the generative AI boom of late 2022. This temporal gap is an analytical advantage, allowing this project to set the stage to longitudinally disentangle the baseline effects of "traditional" AI adoption from the subsequent, compounding wage trajectories triggered by the Generative AI boom within the Danish registers.
+
+% ============================================================
+\section{Work Plan and Fit with CBS}
+% ============================================================
+
+This research is a perfect fit for the \textbf{'Digital Transformations'} research area at CBS. The proposed work plan is structured to produce three high-quality, independent but cohesive papers suitable for top-tier journals.
+
+\begin{description}[leftmargin=0em, itemsep=0.3em, font=\normalfont\bfseries]
+    \item[Year 1:] Apply the validated \textsc{career-dml} framework to the Danish registers. Write \textbf{Paper 1} (methodological), focusing on the Sequential Embedding Ordering Phenomenon. Target: AISTATS or a top econometrics journal.
+    \item[Year 2:] Write \textbf{Paper 2} (substantive), analyzing treatment effect heterogeneity of AI adoption across different demographic groups and industries in Denmark. Target: \emph{Management Science} or \emph{Strategic Management Journal}.
+    \item[Year 3:] Write \textbf{Paper 3} (policy-focused), simulating the long-term impacts of different AI adoption scenarios on wage inequality and career mobility. Consolidate papers into PhD thesis.
+\end{description}
+
+% ============================================================
+\vspace{0.8em}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.3em}
+
+{\small\noindent\textbf{Key References:}
+Chernozhukov, V. et al. (2018). Double/debiased machine learning for treatment and structural parameters. \emph{The Econometrics Journal}. \textbullet
+Ben-Porath, Y. (1967). The Production of Human Capital and the Life Cycle of Earnings. \emph{Journal of Political Economy}. \textbullet
+Keane, M. P., & Wolpin, K. I. (1997). The Career Decisions of Young Men. \emph{Journal of Political Economy}. \textbullet
+Felten, E., et al. (2021). Occupational hierarchy and the labor market impacts of automation. \emph{AEA Papers and Proceedings}.}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,31 @@
+\begin{thebibliography}{}
+
+\bibitem[Ben-Porath, 1967]{BenPorath1967}
+Ben-Porath, Y. (1967).
+\newblock The production of human capital and the life cycle of earnings.
+\newblock {\em Journal of Political Economy}, 75(4):352--365.
+
+\bibitem[Chernozhukov et~al., 2018]{Chernozhukov2018}
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey,
+  W., and Robins, J. (2018).
+\newblock Double/debiased machine learning for treatment and structural
+  parameters.
+\newblock {\em The Econometrics Journal}, 21(1):C1--C68.
+
+\bibitem[Felten et~al., 2021]{Felten2021}
+Felten, E., Raj, M., and Seamans, R. (2021).
+\newblock Occupational, industry, and geographic exposure to artificial
+  intelligence: A novel dataset and its potential uses.
+\newblock {\em Strategic Management Journal}, 42(12):2195--2217.
+
+\bibitem[Keane and Wolpin, 1997]{Keane1997}
+Keane, M.~P. and Wolpin, K.~I. (1997).
+\newblock The career decisions of young men.
+\newblock {\em Journal of Political Economy}, 105(3):473--522.
+
+\bibitem[{Microsoft Research}, 2019]{econml}
+{Microsoft Research} (2019).
+\newblock {EconML}: A python package for econometric machine learning.
+\newblock Technical report, Microsoft.
+
+\end{thebibliography}

@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: PAPER_DRAFTS_V10.aux
+The style file: apalike.bst
+Database file #1: references.bib
+Warning--empty journal in Mincer1974
+You've used 15 entries,
+            1935 wiz_defined-function locations,
+            571 strings with 5822 characters,
+and the built_in function-call counts, 5295 in all, are:
+= -- 527
+> -- 181
+< -- 11
++ -- 72
+- -- 58
+* -- 432
+:= -- 955
+add.period$ -- 44
+call.type$ -- 15
+change.case$ -- 109
+chr.to.int$ -- 15
+cite$ -- 16
+duplicate$ -- 198
+empty$ -- 380
+format.name$ -- 77
+if$ -- 1005
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 10
+newline$ -- 77
+num.names$ -- 45
+pop$ -- 79
+preamble$ -- 1
+purify$ -- 104
+quote$ -- 0
+skip$ -- 150
+stack$ -- 0
+substring$ -- 394
+swap$ -- 9
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 90
+warning$ -- 1
+while$ -- 46
+width$ -- 0
+write$ -- 193
+(There was 1 warning)

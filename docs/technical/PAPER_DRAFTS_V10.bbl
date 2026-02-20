@@ -1,0 +1,85 @@
+\begin{thebibliography}{}
+
+\bibitem[Acemoglu and Restrepo, 2019]{Acemoglu2019}
+Acemoglu, D. and Restrepo, P. (2019).
+\newblock Automation and new tasks: How technology displaces and reinstates
+  labor.
+\newblock {\em Journal of Economic Perspectives}, 33(2):3--30.
+
+\bibitem[Autor et~al., 2003]{Autor2003}
+Autor, D.~H., Levy, F., and Murnane, R.~J. (2003).
+\newblock The skill content of recent technological change: An empirical
+  exploration.
+\newblock {\em The Quarterly Journal of Economics}, 118(4):1279--1333.
+
+\bibitem[Ben-Porath, 1967]{BenPorath1967}
+Ben-Porath, Y. (1967).
+\newblock The production of human capital and the life cycle of earnings.
+\newblock {\em Journal of Political Economy}, 75(4):352--365.
+
+\bibitem[Chernozhukov et~al., 2018]{Chernozhukov2018}
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey,
+  W., and Robins, J. (2018).
+\newblock Double/debiased machine learning for treatment and structural
+  parameters.
+\newblock {\em The Econometrics Journal}, 21(1):C1--C68.
+
+\bibitem[Felten et~al., 2021]{Felten2021}
+Felten, E., Raj, M., and Seamans, R. (2021).
+\newblock Occupational, industry, and geographic exposure to artificial
+  intelligence: A novel dataset and its potential uses.
+\newblock {\em Strategic Management Journal}, 42(12):2195--2217.
+
+\bibitem[{Gallup}, 2026]{Gallup2026}
+{Gallup} (2026).
+\newblock Ai in the workplace: Tracking employee adoption.
+\newblock Technical report, Gallup, Inc.
+
+\bibitem[Heckman, 1979]{Heckman1979}
+Heckman, J.~J. (1979).
+\newblock Sample selection bias as a specification error.
+\newblock {\em Econometrica}, 47(1):153--161.
+
+\bibitem[Keane and Wolpin, 1997]{Keane1997}
+Keane, M.~P. and Wolpin, K.~I. (1997).
+\newblock The career decisions of young men.
+\newblock {\em Journal of Political Economy}, 105(3):473--522.
+
+\bibitem[{McKinsey \& Company}, 2024]{McKinsey2024}
+{McKinsey \& Company} (2024).
+\newblock The state of ai in early 2024: Gen ai adoption spikes and starts to
+  generate value.
+\newblock Technical report, McKinsey Global Institute.
+
+\bibitem[{McKinsey \& Company}, 2025]{McKinsey2025}
+{McKinsey \& Company} (2025).
+\newblock The state of ai in 2025.
+\newblock Technical report, McKinsey Global Institute.
+
+\bibitem[Mincer, 1974]{Mincer1974}
+Mincer, J. (1974).
+\newblock Schooling, experience, and earnings.
+
+\bibitem[Neal, 1999]{Neal1999}
+Neal, D. (1999).
+\newblock The complexity of job mobility among young men.
+\newblock {\em Journal of Labor Economics}, 17(2):237--261.
+
+\bibitem[{OECD}, 2024]{OECD2024}
+{OECD} (2024).
+\newblock The impact of ai on the workplace: Evidence from oecd countries.
+\newblock Technical report, Organisation for Economic Co-operation and
+  Development.
+
+\bibitem[{OECD}, 2026]{OECD2026}
+{OECD} (2026).
+\newblock Ai use in the nordics: Individual adoption trends.
+\newblock Technical report, Organisation for Economic Co-operation and
+  Development.
+
+\bibitem[Veitch et~al., 2020]{Veitch2020}
+Veitch, V., Sridhar, D., and Blei, D.~M. (2020).
+\newblock Adapting text embeddings for causal inference.
+\newblock In {\em Uncertainty in Artificial Intelligence}.
+
+\end{thebibliography}
