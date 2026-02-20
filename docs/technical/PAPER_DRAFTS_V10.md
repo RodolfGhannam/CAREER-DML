@@ -4,7 +4,7 @@
 
 **Date:** February 20, 2026
 
-**Version:** 7.0
+
 
 ---
 

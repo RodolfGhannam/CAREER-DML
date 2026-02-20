@@ -4,7 +4,6 @@
 
 **Date:** February 20, 2026
 
-**Version:** 10.0
 
 ---
 
@@ -55,4 +54,4 @@ My research plan is structured to build directly upon the findings from the CARE
 
 ## 4. Data and Supervision
 
-This project will leverage the world-class administrative data available through Statistics Denmark. This dataset is uniquely suited to this research due to its scale, temporal depth, and granularity. This research is a perfect fit for the research environment at CBS and the supervision of Prof. Kongsted, whose work on labor mobility and innovation using Danish register data aligns perfectly with the project's goals. My background in econometrics and machine learning, combined with the validated CAREER-DML framework, provides a strong foundation to execute this ambitious agenda.
+This project will leverage the world-class administrative data available through Statistics Denmark. This dataset is uniquely suited to this research due to its scale, temporal depth, and granularity. This research is a perfect fit for the **"Digital Transformations"** research area at CBS and the supervision of Prof. Kongsted, whose work on labor mobility and innovation using Danish register data aligns perfectly with the project's goals. My background in econometrics and machine learning, combined with the validated CAREER-DML framework, provides a strong foundation to execute this ambitious agenda.
