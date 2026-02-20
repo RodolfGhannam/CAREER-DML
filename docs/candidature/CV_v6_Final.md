@@ -22,16 +22,7 @@ Executive and practitioner-researcher with over 15 years of leadership experienc
 
 ---
 
-## Professional & Executive Education
-
-| Year | Program | Institution | Details |
-| :--- | :--- | :--- | :--- |
-| 2016 | **Certificate in Policy & Strategy (CEPE)** | Escola Superior de Guerra (ESG), Ministry of Defence, Brazil | 204 hours of studies in national policy and strategy. |
-| 2025 | **MIT xPRO Professional Certificate in AI** | Massachusetts Institute of Technology (MIT) | Achieved 100% score on the final capstone project. |
-
----
-
-## Professional Certifications
+## Regulatory & Financial Certifications
 
 | Certification | Issuing Body |
 | :--- | :--- |
@@ -92,7 +83,9 @@ Founded and scaled a food distribution company from the ground up, including bra
 
 | Year | Distinction | Details |
 | :--- | :--- | :--- |
+| 2025 | **MIT xPRO Professional Certificate in AI** | Massachusetts Institute of Technology. Achieved 100% score on the final capstone project. |
 | 2018–2021 | **GM "A" Excellence Award** | General Motors' highest dealership distinction, awarded 4 consecutive years. |
+| 2016 | **Certificate in Policy & Strategy (CEPE)** | Escola Superior de Guerra (ESG), Ministry of Defence, Brazil. 204 hours. |
 
 ---
 
