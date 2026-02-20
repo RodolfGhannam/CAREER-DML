@@ -10,15 +10,33 @@ Executive and practitioner-researcher with over 15 years of leadership experienc
 
 ---
 
-## Education
+## Academic Education
 
 | Year | Degree | Institution | Details |
 | :--- | :--- | :--- | :--- |
-| 2025 (in progress) | **MSc in Administration — Digital Business** | American Global Tech University (AGTU), Orlando, FL, USA | Focus on digital business models and data-driven strategy. |
-| 2024 | **Bachelor of Business Administration** | Centro Universitário FAEL (UNIFAEL), Brazil | Full undergraduate degree in management (Bacharel em Administração). |
-| 2022 | **MBA in Marketing: Digital Media** | Fundação Getulio Vargas (FGV), Brazil | **Triple Crown accredited (AACSB, EQUIS, AMBA)**. Grade: 8.23/10. 480 hours. |
-| 2020 | **MBA in Management, Entrepreneurship & Marketing** | Pontifical Catholic University of Rio Grande do Sul (PUCRS), Brazil | Grade: 8.0/10. Capstone: BSC application in public management. 363 hours. |
 | 2018 | **Technologist Degree in Management Processes** | Faculdade Educacional da Lapa (FAEL), Brazil | Higher education degree in managerial processes (Tecnólogo em Processos Gerenciais). |
+| 2020 | **MBA in Management, Entrepreneurship & Marketing** | Pontifical Catholic University of Rio Grande do Sul (PUCRS), Brazil | Grade: 8.0/10. Capstone: BSC application in public management. 363 hours. |
+| 2022 | **MBA in Marketing: Digital Media** | Fundação Getulio Vargas (FGV), Brazil | **Triple Crown accredited (AACSB, EQUIS, AMBA)**. Grade: 8.23/10. 480 hours. |
+| 2024 | **Bachelor of Business Administration** | Centro Universitário FAEL (UNIFAEL), Brazil | Full undergraduate degree in management (Bacharel em Administração). |
+| 2025 (in progress) | **MSc in Administration — Digital Business** | American Global Tech University (AGTU), Orlando, FL, USA | Focus on digital business models and data-driven strategy. |
+
+---
+
+## Professional & Executive Education
+
+| Year | Program | Institution | Details |
+| :--- | :--- | :--- | :--- |
+| 2016 | **Certificate in Policy & Strategy (CEPE)** | Escola Superior de Guerra (ESG), Ministry of Defence, Brazil | 204 hours of studies in national policy and strategy. |
+| 2025 | **MIT xPRO Professional Certificate in AI** | Massachusetts Institute of Technology (MIT) | Achieved 100% score on the final capstone project. |
+
+---
+
+## Professional Certifications
+
+| Certification | Issuing Body |
+| :--- | :--- |
+| **CPA-10** (Financial Products Certification) | ANBIMA (Brazilian Financial and Capital Markets Association) |
+| **PLD** (Anti-Money Laundering Compliance) | FTCI / Cical Consórcio |
 
 ---
 
@@ -72,20 +90,9 @@ Founded and scaled a food distribution company from the ground up, including bra
 
 ## Honors & Distinctions
 
-| Year | Distinction | Institution |
+| Year | Distinction | Details |
 | :--- | :--- | :--- |
-| 2025 | **MIT xPRO Professional Certificate in AI** — 100% capstone score | MIT |
-| 2018–2021 | **GM "A" Excellence Award** — General Motors' highest dealership distinction, 4 consecutive years | General Motors |
-| 2016 | **Certificate in Policy & Strategy (CEPE)** — 204 hours of studies in policy and strategy | Escola Superior de Guerra (ESG), Ministry of Defence, Brazil |
-
----
-
-## Professional Certifications
-
-| Certification | Issuing Body |
-| :--- | :--- |
-| **CPA-10** (Financial Products Certification) | ANBIMA (Brazilian Financial and Capital Markets Association) |
-| **PLD** (Anti-Money Laundering Compliance) | FTCI / Cical Consórcio |
+| 2018–2021 | **GM "A" Excellence Award** | General Motors' highest dealership distinction, awarded 4 consecutive years. |
 
 ---
 
