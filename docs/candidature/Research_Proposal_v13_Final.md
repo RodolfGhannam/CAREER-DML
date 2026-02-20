@@ -12,10 +12,9 @@
 
 The central question of this PhD project is: **What is the causal effect of career transitions, particularly those related to technological change like AI, on individual wage trajectories?**
 
-To address this, I have developed **CAREER-DML**, a novel framework combining deep learning for representation learning with Double/Debiased Machine Learning (DML) for robust causal estimation. The framework has been validated in a **semi-synthetic data laboratory**, where the simulation parameters are calibrated with real-world data to ensure relevance. This initial work has already yielded two key scientific insights that form the foundation of this proposal:
+To address this, I have developed **CAREER-DML**, a novel framework combining deep learning for representation learning with Double/Debiased Machine Learning (DML) for robust causal estimation. The framework has been validated in a **semi-synthetic data laboratory**, where the simulation parameters are calibrated with real-world data to ensure relevance. This initial work, conducted in a semi-synthetic data laboratory, yielded two key insights that form the foundation of this proposal: a **Sequential Embedding Ordering Phenomenon** that challenges current methods, and a **Signal-to-Noise Frontier** that provides a rigorous justification for the use of large-scale administrative data.
 
-1.  **A Sequential Embedding Ordering Phenomenon:** A consistent empirical finding that simpler predictive embeddings outperform more complex, causally-motivated embeddings in our specific domain, opening a clear avenue for future methodological investigation.
-2.  **The Signal-to-Noise Frontier:** A characterization of the sample size limitations for detecting realistic, small-magnitude causal effects, providing a rigorous justification for the use of large-scale administrative data.
+
 
 This proposal outlines the plan to scale this validated framework using the Danish administrative registers, leveraging the unique opportunity at CBS to move from simulation to real-world impact.
 
@@ -30,7 +29,7 @@ This proposal outlines the plan to scale this validated framework using the Dani
 This project contributes to three main streams of literature:
 
 1.  **Causal Machine Learning:** We extend the work of Chernozhukov et al. (2018) and Veitch et al. (2020) by applying their methods to the domain of sequential socio-economic data and identifying the boundary conditions under which they are effective.
-2.  **Labor Economics:** We provide a new, more robust methodology for estimating treatment effects in the presence of complex, path-dependent career histories. Crucially, we build an explicit bridge to classical structural models (e.g., Ben-Porath, 1967; Mincer, 1974), showing how our learned embeddings can be interpreted as rich, non-parametric approximations of key latent variables like human capital.
+2.  **Labor Economics:** We provide a new, more robust methodology for estimating treatment effects in the presence of complex, path-dependent career histories. Crucially, we build an explicit bridge between the two cultures of modern econometrics—causal ML and structural modeling—by showing how our learned embeddings can be interpreted as rich, non-parametric approximations of key latent variables like human capital (e.g., Ben-Porath, 1967; Mincer, 1974).
 3.  **Economics of AI:** We aim to provide some of the first large-scale, causally-identified estimates of the returns to AI exposure at the individual level, moving beyond correlations to identify causal impacts.
 
 ## 3. PhD Research Plan
