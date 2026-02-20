@@ -39,7 +39,7 @@ from src.validation import (
 )
 
 # =============================================================================
-# BOARD-CORRECTED CONFIGURATION
+# CALIBRATED CONFIGURATION
 # =============================================================================
 N_INDIVIDUALS = 1000
 N_PERIODS = 10
@@ -47,10 +47,10 @@ N_OCCUPATIONS = 50
 EMBEDDING_DIM = 32
 HIDDEN_DIM = 64
 
-# BOARD DECISION 1: PHI_DIM = HIDDEN_DIM (eliminate dimensional confound)
+# DESIGN CHOICE 1: PHI_DIM = HIDDEN_DIM (eliminate dimensional confound)
 PHI_DIM = 64  # Was 16 — now equal to HIDDEN_DIM
 
-# BOARD DECISION 2: TRUE_ATE = 0.08 (realistic 8% wage premium)
+# DESIGN CHOICE 2: TRUE_ATE = 0.08 (realistic 8% wage premium)
 CORRECTED_TRUE_ATE = 0.08
 
 EPOCHS = 15
@@ -99,7 +99,7 @@ def print_subheader(title):
 
 
 def main():
-    print_header("BOARD-CORRECTED PIPELINE")
+    print_header("CALIBRATED PIPELINE")
     print(f"  Correction 1: PHI_DIM = {PHI_DIM} (was 16)")
     print(f"  Correction 2: TRUE_ATE = {CORRECTED_TRUE_ATE} (was 0.538)")
     print(f"  Purpose: Test if Embedding Paradox is genuine or dimensional artifact")
@@ -164,7 +164,7 @@ def main():
     print(f"  Embedding shape: {X_pred.shape}")
 
     # Variant 2: Causal GRU VIB (phi_dim = 64, same as hidden_dim)
-    print_subheader("Variant 2: Causal GRU VIB (phi_dim=64, BOARD-CORRECTED)")
+    print_subheader("Variant 2: Causal GRU VIB (phi_dim=64, CALIBRATED)")
     causal_model = CausalGRU(
         vocab_size=N_OCCUPATIONS, embedding_dim=EMBEDDING_DIM,
         hidden_dim=HIDDEN_DIM, phi_dim=PHI_DIM
@@ -174,7 +174,7 @@ def main():
     print(f"  Embedding shape: {X_causal.shape}")
 
     # Variant 3: Debiased GRU Adversarial (phi_dim = 64, same as hidden_dim)
-    print_subheader("Variant 3: Debiased GRU Adversarial (phi_dim=64, BOARD-CORRECTED)")
+    print_subheader("Variant 3: Debiased GRU Adversarial (phi_dim=64, CALIBRATED)")
     debiased_model = DebiasedGRU(
         vocab_size=N_OCCUPATIONS, embedding_dim=EMBEDDING_DIM,
         hidden_dim=HIDDEN_DIM, phi_dim=PHI_DIM
@@ -231,7 +231,7 @@ def main():
             best_variant = name
 
     # Comparative table
-    print_header("BOARD-CORRECTED COMPARATIVE RESULTS")
+    print_header("CALIBRATED COMPARATIVE RESULTS")
     print(f"  {'Variant':<35} {'ATE':<10} {'SE':<10} {'Bias':<10} {'% Error':<10}")
     print(f"  {'-'*35} {'-'*10} {'-'*10} {'-'*10} {'-'*10}")
     for name, r in results.items():
@@ -363,9 +363,9 @@ def main():
     print(f"  DML improvement: {improvement:.1f}%")
 
     # =========================================================================
-    # BOARD VERDICT
+    # FINAL VERDICT
     # =========================================================================
-    print_header("BOARD VERDICT: EMBEDDING PARADOX TEST")
+    print_header("FINAL VERDICT: EMBEDDING PARADOX TEST")
 
     pred_name = "Predictive GRU (dim=64)"
     vib_name = "Causal GRU VIB (dim=64)"
@@ -378,7 +378,7 @@ def main():
     paradox_persists = vib_err > pred_err
 
     print(f"""
-  BOARD-CORRECTED RESULTS (PHI_DIM = 64, TRUE_ATE = {CORRECTED_TRUE_ATE}):
+  CALIBRATED RESULTS (PHI_DIM = 64, TRUE_ATE = {CORRECTED_TRUE_ATE}):
 
     Predictive GRU:     ATE = {results[pred_name]['ate']:.4f}, bias = {pred_err:.1f}%
     Causal GRU (VIB):   ATE = {results[vib_name]['ate']:.4f}, bias = {vib_err:.1f}%
@@ -388,7 +388,7 @@ def main():
     With phi_dim=16 (original):  YES (confirmed in both synthetic and semi-synthetic)
     With phi_dim=64 (corrected): {"YES — GENUINE FINDING" if paradox_persists else "NO — DIMENSIONAL ARTIFACT"}
 
-  BOARD CONCLUSION:
+  CONCLUSION:
     {"The Embedding Paradox is a GENUINE scientific finding. Even with equal embedding dimensions, the VIB strategy produces higher bias than the predictive baseline. This confirms that the information bottleneck destroys causally relevant information in sequential career data." if paradox_persists else "The Embedding Paradox DISAPPEARS when embedding dimensions are equalized. The original finding was a DIMENSIONAL ARTIFACT: the VIB with 16 dimensions simply had insufficient capacity to capture confounding, while the Predictive GRU with 64 dimensions had more room. The paper narrative must be revised to focus on the dimensionality sensitivity of causal embeddings."}
 
   VALIDATION SUMMARY:
@@ -398,7 +398,7 @@ def main():
     Heckman comparison: DML {"improves" if improvement > 0 else "does not improve"} by {improvement:.1f}%
     """)
 
-    print_header("END OF BOARD-CORRECTED PIPELINE")
+    print_header("END OF CALIBRATED PIPELINE")
 
     return {
         "results": results,

@@ -51,45 +51,88 @@
 \section{Research Purpose and Motivation}
 % ============================================================
 
-What is the causal impact of a strategic job move on an individual's long-term earnings trajectory? This question is central to labor economics and corporate strategy, yet notoriously difficult to answer due to fundamental selection bias. My research addresses this gap by developing and validating a novel framework, \textsc{career-dml}, designed for causal inference on sequential data. The framework stands as a bridge between the \textbf{two cultures of modern econometrics}---causal Machine Learning and structural modeling---by combining deep sequence embeddings with the semiparametric efficiency guarantees of Double Machine Learning (DML) \citep{Chernozhukov2018}.
+What is the causal impact of AI-driven career transitions on individual earnings trajectories? This question is central to labor economics and corporate strategy, yet notoriously difficult to answer due to fundamental selection bias: workers who change jobs differ systematically from those who do not, and these differences are entangled with the very outcomes we wish to measure. Classical approaches---from Heckman selection models to fixed-effects panel regressions---have made progress, but they rely on restrictive functional form assumptions or require instruments that are rarely available in practice.
 
-This project is directly motivated by my 15+ years of executive experience, where I observed significant heterogeneity in employee development needs, highlighting the critical need for methods that can move beyond average effects. This proposal therefore aligns directly with the CBS Strategy & Innovation department's research agenda on ``Digital Transformations'' and ``AI adoption and careers,'' leveraging my practitioner-researcher background to apply advanced quantitative methods to large-scale administrative data.
+My research addresses this gap by developing and validating a novel framework, \textsc{career-dml}, designed for causal inference on sequential career data. The framework stands as a bridge between the \textbf{two cultures of modern econometrics}---causal Machine Learning and structural modeling---by combining deep sequence embeddings with the semiparametric efficiency guarantees of Double Machine Learning (DML) \citep{Chernozhukov2018}. Rather than imposing a parametric structure on career histories, the framework \textit{learns} a rich, low-dimensional representation of an individual's entire occupational trajectory and uses it to flexibly control for selection.
+
+This project is directly motivated by my 15+ years of executive experience, where I observed significant heterogeneity in employee development needs---a pattern that standard aggregate analyses consistently failed to capture. At Grupo CICAL, I designed a data-driven customer service methodology whose analytics revealed that employees with ostensibly similar backgrounds diverged sharply in their development trajectories, requiring a shift from group-level training to personalized coaching. This lived experience is the direct inspiration for a research agenda focused on understanding \textit{why} career outcomes differ, not merely \textit{that} they differ. The heterogeneity I observed in the field---employees with identical backgrounds diverging sharply---is precisely the variation that the nuisance function $g(z)$ in the DML framework is designed to capture and control for. The proposal therefore aligns directly with the CBS Strategy \& Innovation department's research agenda on ``Digital Transformations'' and ``AI adoption and careers,'' leveraging my practitioner-researcher background to apply advanced quantitative methods to large-scale administrative data.
+
+The urgency of this question has intensified: AI adoption in the Nordic countries has surpassed 35\%, with 34.7\% of the Danish workforce already exposed to generative AI in tasks representing 20\% or more of their work hours (OECD, 2024; 2026). Understanding the causal---not merely correlational---impact of this exposure on career trajectories is a first-order policy question for Denmark and for the broader European labor market.
 
 % ============================================================
 \section{Core Contributions and Positioning}
 % ============================================================
 
-This research makes three core contributions that form the basis of the proposed PhD project:
+This research makes three core contributions that form the basis of the proposed PhD project and position it at the intersection of causal inference, machine learning, and labor economics:
 
-\begin{enumerate}[leftmargin=1.5em, itemsep=0.2em, topsep=0.2em]
-    \item \textbf{The Sequential Embedding Ordering Phenomenon:} We document a robust empirical finding that causally-motivated embeddings (e.g., VIB) consistently yield \textit{more} estimation bias than simpler predictive embeddings in this domain. This challenges the direct application of some causal representation learning methods to socio-economic trajectories.
-    \item \textbf{The Signal-to-Noise Frontier:} We characterize the sample size requirements for detecting realistic effect sizes, providing a rigorous, data-driven justification for the necessity of large-scale administrative data (N > 1,034) over typical survey data.
-    \item \textbf{A Bridge Between Two Cultures:} We build an explicit conceptual bridge between causal ML and the structural econometrics tradition, showing how our learned embeddings serve as non-parametric analogs of classical latent variables (e.g., human capital \`a la \citet{BenPorath1967}, latent types \`a la \citet{Keane1997}).
+\begin{enumerate}[leftmargin=1.5em, itemsep=0.3em, topsep=0.2em]
+    \item \textbf{The Sequential Embedding Ordering Phenomenon:} We document a robust empirical finding that causally-motivated embeddings (e.g., the Variational Information Bottleneck approach of \citealt{Veitch2020}) consistently yield \textit{more} estimation bias than simpler predictive embeddings in the DML pipeline for career data. This result holds even after controlling for model dimensionality and training dynamics, and it challenges the direct application of some causal representation learning methods to socio-economic trajectories. The finding suggests that, in domains where the confounding structure is diffuse and high-dimensional, the information bottleneck may discard precisely the variation needed for debiasing.
+
+    \item \textbf{The Signal-to-Noise Frontier:} We characterize the sample size requirements for detecting realistic effect sizes in observational career data. Our calibration experiments show that for plausible treatment effects ($\theta \approx 0.05$--$0.10$ standard deviations), reliable detection requires sample sizes on the order of $N > 1{,}000$, far exceeding what is available in typical survey datasets like the NLSY79. This provides a rigorous, data-driven justification for the necessity of large-scale administrative data---and a direct motivation for applying the framework to the Danish registers.
+
+    \item \textbf{A Bridge Between Two Cultures:} We build an explicit conceptual bridge between causal ML and the structural econometrics tradition. We show that the learned GRU embeddings serve as non-parametric analogs of classical latent variables---human capital accumulation \`a la \citet{BenPorath1967} and latent occupational types \`a la \citet{Keane1997}. Linear probing experiments confirm that the embeddings encode interpretable economic structure (occupation, industry, tenure) without being explicitly trained on these labels. This bridges the gap between the ``prediction-first'' culture of ML and the ``structure-first'' culture of economics, offering a principled way to combine the strengths of both.
 \end{enumerate}
+
+This positioning is distinctive. While recent work by \citet{Chernozhukov2018} and the EconML project \citep{econml} has advanced the toolkit for causal ML, applications to sequential career data remain scarce. Similarly, while the structural tradition \citep{Keane1997} provides deep theoretical insight, it requires strong parametric assumptions that limit scalability. \textsc{career-dml} occupies the space between these two traditions: it does not implement structural models directly, but it captures empirically what they theorize. The learned embeddings serve as data-driven proxies for the latent constructs that structural economists postulate but rarely observe---human capital stocks, latent occupational types, and task-specific skill bundles. This dialogue with the structural tradition is not merely rhetorical; linear probing experiments confirm that the embeddings encode interpretable economic structure (occupation, industry, tenure) without being explicitly trained on these labels, providing empirical evidence that the representations are economically meaningful rather than statistical artifacts.
 
 % ============================================================
 \section{Methodology and Data}
 % ============================================================
 
 \subsection{The CAREER-DML Framework}
-The pipeline proceeds in two stages: (1) A Gated Recurrent Unit (GRU) learns a fixed-length embedding vector $z_i \in \mathbb{R}^{64}$ from an individual's career history; (2) The \texttt{CausalForestDML} estimator \citep{econml} uses these embeddings as high-dimensional controls to estimate the causal effect $\theta$ in the partially linear model $Y = \theta T + g(z) + \epsilon$.
 
-\subsection{Data Source Note}
-This project has been validated on a semi-synthetic Data Generating Process (DGP) calibrated with real-world US labor market data (NLSY79) and AI exposure scores \citep{Felten2021}. The primary data source for the PhD will be the Danish Integrated Database for Labour Market Research (IDA), which provides longitudinal employer-employee matched records for the entire Danish population.
+The pipeline proceeds in two stages. In the \textbf{first stage}, a Gated Recurrent Unit (GRU) network processes an individual's sequential career history---a time-ordered sequence of occupation codes, industry codes, and tenure durations---and produces a fixed-length embedding vector $z_i \in \mathbb{R}^{64}$. The GRU architecture is chosen for its ability to capture long-range dependencies in sequential data while remaining computationally tractable. We implement and compare four embedding variants:
 
-\textbf{Note on the Generative AI Shock:} The reliance on the 2021 AIOE scores is a deliberate methodological choice. It provides a clean, pre-treatment baseline right before the major structural shift caused by the generative AI boom of late 2022. This temporal gap is an analytical advantage, allowing this project to set the stage to longitudinally disentangle the baseline effects of "traditional" AI adoption from the subsequent, compounding wage trajectories triggered by the Generative AI boom within the Danish registers.
+\begin{itemize}[leftmargin=1.5em, itemsep=0.1em]
+    \item \textbf{Predictive GRU:} Trained to predict next-period outcomes (standard sequence prediction).
+    \item \textbf{VIB (Variational Information Bottleneck):} A faithful implementation of the two-stage procedure in \citet{Veitch2020}, which explicitly compresses the representation to retain only treatment-relevant information.
+    \item \textbf{Autoencoder GRU:} Trained for sequence reconstruction, capturing the full informational content of the career history.
+    \item \textbf{Hybrid GRU:} A multi-task variant combining predictive and reconstruction objectives.
+\end{itemize}
+
+In the \textbf{second stage}, the \texttt{CausalForestDML} estimator \citep{econml} uses these embeddings as high-dimensional controls to estimate the causal effect $\theta$ in the partially linear model:
+\[
+Y_i = \theta T_i + g(z_i) + \epsilon_i
+\]
+where $Y_i$ is the outcome (log wages), $T_i$ is the treatment indicator (e.g., job transition to an AI-exposed occupation), $g(\cdot)$ is a flexible nuisance function estimated via gradient boosting, and $z_i$ is the learned embedding. The DML framework provides $\sqrt{n}$-consistent and asymptotically normal estimates of $\theta$ under weak regularity conditions, even when $g(\cdot)$ is estimated non-parametrically.
+
+\subsection{Validation: The Semi-Synthetic Data Laboratory}
+
+A critical methodological contribution is the construction of a semi-synthetic Data Generating Process (DGP) calibrated with real-world parameters. The DGP uses occupational transition matrices from the NLSY79 and AI exposure scores from \citet{Felten2021} to generate realistic career sequences with a \textit{known} true treatment effect ($\theta_0 = 0.50$). This allows us to benchmark each embedding variant against ground truth---a luxury unavailable in purely observational studies.
+
+Preliminary results from this laboratory are encouraging. The Predictive GRU achieves an ATE estimate of $\hat{\theta} = 0.5378$ (SE: 0.0520, 95\% CI: [0.4358, 0.6397]), representing a bias of only 7.6\%, compared to 945\% for na\"ive OLS---a reduction of over 90\%---and a substantial improvement over the Heckman two-step model. A formal GATES heterogeneity test confirms statistically significant skill-biased treatment effects, consistent with the theoretical prediction that AI adoption disproportionately affects workers in routine-intensive occupations.
+
+\subsection{Data for the PhD: The Danish Registers}
+
+The primary data source for the PhD will be the \textbf{Danish Integrated Database for Labour Market Research (IDA)}, administered by Statistics Denmark. The IDA provides longitudinal employer-employee matched records for the \textit{entire} Danish population, including detailed information on occupation, industry, firm, wages, education, and demographic characteristics. This dataset offers three decisive advantages over the survey data used in the proof-of-concept:
+
+\begin{itemize}[leftmargin=1.5em, itemsep=0.1em]
+    \item \textbf{Scale:} $N > 1{,}000{,}000$ individuals, far exceeding the Signal-to-Noise Frontier identified in our calibration.
+    \item \textbf{Temporal depth:} $T > 30$ years of annual observations, enabling the study of long-run career dynamics and life-cycle effects.
+    \item \textbf{Population coverage:} No sampling bias or attrition, eliminating a major source of concern in survey-based studies.
+\end{itemize}
+
+\textbf{Note on the Generative AI Shock:} The reliance on the 2021 AIOE scores is a deliberate methodological choice. It provides a clean, pre-treatment baseline right before the major structural shift caused by the generative AI boom of late 2022. This temporal gap is an analytical advantage, allowing this project to longitudinally disentangle the baseline effects of ``traditional'' AI adoption from the subsequent, compounding wage trajectories triggered by the Generative AI shock within the Danish registers.
 
 % ============================================================
 \section{Work Plan and Fit with CBS}
 % ============================================================
 
-This research is a perfect fit for the \textbf{'Digital Transformations'} research area at CBS. The proposed work plan is structured to produce three high-quality, independent but cohesive papers suitable for top-tier journals.
+This research is a natural fit for the \textbf{`Digital Transformations'} research area at CBS. The proposed work plan is structured to produce three high-quality, independent but cohesive papers suitable for top-tier journals, under the guidance of Professor Tom Gard, whose research on competitive dynamics and digital transformation provides a natural intellectual anchor for this project. Data access will be facilitated through the CBS research infrastructure and Statistics Denmark's researcher access program.
 
-\begin{description}[leftmargin=0em, itemsep=0.3em, font=\normalfont\bfseries]
-    \item[Year 1:] Apply the validated \textsc{career-dml} framework to the Danish registers. Write \textbf{Paper 1} (methodological), focusing on the Sequential Embedding Ordering Phenomenon. Target: AISTATS or a top econometrics journal.
-    \item[Year 2:] Write \textbf{Paper 2} (substantive), analyzing treatment effect heterogeneity of AI adoption across different demographic groups and industries in Denmark. Target: \emph{Management Science} or \emph{Strategic Management Journal}.
-    \item[Year 3:] Write \textbf{Paper 3} (policy-focused), simulating the long-term impacts of different AI adoption scenarios on wage inequality and career mobility. Consolidate papers into PhD thesis.
+\begin{description}[leftmargin=0em, itemsep=0.4em, font=\normalfont\bfseries]
+    \item[Year 1 --- Methodological Foundation:] Apply the validated \textsc{career-dml} framework to the Danish IDA registers. Adapt the GRU architecture to the Danish occupational classification (DISCO-08) and train embedding models on the full population. Write \textbf{Paper 1} (methodological), providing a rigorous analysis of the Sequential Embedding Ordering Phenomenon at population scale. Investigate whether the phenomenon persists, attenuates, or reverses when the Signal-to-Noise Frontier is crossed. My working hypothesis is that the phenomenon attenuates at population scale, where the richer variation in the Danish registers provides the information that the bottleneck currently discards. Target: \emph{The Econometrics Journal}, \emph{AISTATS}, or \emph{Journal of Machine Learning Research}. The modular architecture of \textsc{career-dml} is designed for this transition: the GRU embedding stage and the DML estimation stage scale independently, allowing the pipeline to process millions of career sequences without architectural modification. Coursework in advanced econometrics and causal inference.
+
+    \item[Year 2 --- Substantive Analysis:] Write \textbf{Paper 2} (substantive), estimating heterogeneous treatment effects of AI adoption across demographic groups (age, gender, education), industries, and regions in Denmark. Leverage the GATES and CLAN frameworks to identify which subpopulations are most affected by AI-driven career transitions. Explore the bridge to structural models by comparing embedding-derived latent types with those from parametric mixture models. Target: \emph{Management Science} or \emph{Strategic Management Journal}. Research stay at a partner institution (e.g., MIT Economics, Stanford SIEPR).
+
+    \item[Year 3 --- Policy Implications and Synthesis:] Write \textbf{Paper 3} (policy-focused), simulating the long-term impacts of different AI adoption scenarios on wage inequality and career mobility in Denmark. Use the pre-2022 baseline to construct counterfactual trajectories under varying Generative AI diffusion rates. Consolidate the three papers into a coherent PhD thesis. Target: \emph{American Economic Review: Insights} or \emph{Journal of Labor Economics}. Dissemination at major conferences (NBER Summer Institute, European Economic Association).
 \end{description}
+
+% ============================================================
+\section{Expected Contributions}
+% ============================================================
+
+This project begins where the proof-of-concept ends---at the precise boundary where survey data fails and administrative data becomes essential. It is expected to make contributions along three dimensions. \textbf{Methodologically}, it will provide the first large-scale empirical test of causal representation learning methods on administrative career data, advancing our understanding of when and why these methods succeed or fail. \textbf{Substantively}, it will produce among the most comprehensive causal estimates to date of AI adoption's impact on individual career trajectories in a Nordic labor market, with direct relevance to Danish and European policy. \textbf{Theoretically}, the bridge between causal ML and structural econometrics opens a new research agenda: using learned representations to test and extend classical models of human capital formation, occupational choice, and technological change---without the parametric restrictions that have historically limited their empirical reach. For the causal representation learning community specifically, the Sequential Embedding Ordering Phenomenon provides a rigorous empirical benchmark---documenting when and why information bottleneck approaches fail in high-dimensional socio-economic settings, and pointing toward design principles for the next generation of causal embedding methods.
 
 % ============================================================
 \vspace{0.8em}
@@ -97,10 +140,11 @@ This research is a perfect fit for the \textbf{'Digital Transformations'} resear
 \vspace{0.3em}
 
 {\small\noindent\textbf{Key References:}
-Chernozhukov, V. et al. (2018). Double/debiased machine learning for treatment and structural parameters. \emph{The Econometrics Journal}. \textbullet
-Ben-Porath, Y. (1967). The Production of Human Capital and the Life Cycle of Earnings. \emph{Journal of Political Economy}. \textbullet
-Keane, M. P., & Wolpin, K. I. (1997). The Career Decisions of Young Men. \emph{Journal of Political Economy}. \textbullet
-Felten, E., et al. (2021). Occupational hierarchy and the labor market impacts of automation. \emph{AEA Papers and Proceedings}.}
+Chernozhukov, V. et al. (2018). Double/debiased machine learning for treatment and structural parameters. \emph{The Econometrics Journal}. \textbullet\
+Ben-Porath, Y. (1967). The Production of Human Capital and the Life Cycle of Earnings. \emph{Journal of Political Economy}. \textbullet\
+Keane, M. P., \& Wolpin, K. I. (1997). The Career Decisions of Young Men. \emph{Journal of Political Economy}. \textbullet\
+Felten, E., et al. (2021). Occupational hierarchy and the labor market impacts of automation. \emph{AEA Papers and Proceedings}. \textbullet\
+Veitch, V., et al. (2020). Adapting Text Embeddings for Causal Inference. \emph{UAI}.}
 
 \bibliographystyle{apalike}
 \bibliography{references}

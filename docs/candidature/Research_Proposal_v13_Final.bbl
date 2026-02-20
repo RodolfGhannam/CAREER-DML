@@ -28,4 +28,9 @@ Keane, M.~P. and Wolpin, K.~I. (1997).
 \newblock {EconML}: A python package for econometric machine learning.
 \newblock Technical report, Microsoft.
 
+\bibitem[Veitch et~al., 2020]{Veitch2020}
+Veitch, V., Sridhar, D., and Blei, D.~M. (2020).
+\newblock Adapting text embeddings for causal inference.
+\newblock In {\em Uncertainty in Artificial Intelligence}.
+
 \end{thebibliography}

@@ -38,7 +38,8 @@
 }
 \author{
     Rodolf Mikel Ghannam Neto\\
-    \textit{Independent Researcher}
+    \textit{Independent Researcher}\\
+    \textit{\small PhD Applicant, Department of Strategy and Innovation, Copenhagen Business School}
     \vspace{1cm}
 }
 \date{February 20, 2026}
@@ -53,7 +54,7 @@
 
 % --- ABSTRACT ---
 \begin{abstract}
-\noindent This paper introduces CAREER-DML, a framework for estimating heterogeneous causal effects of career transitions using sequential data. We leverage Double/Debiased Machine Learning (DML) combined with recurrent neural network (RNN) embeddings to model high-dimensional career histories and estimate the causal impact of transitioning to an AI-exposed occupation. Our primary contribution is twofold. First, we identify and document a \textbf{Sequential Embedding Ordering Phenomenon} in this domain: causally-regularized embeddings (Variational Information Bottleneck), which are theoretically appealing, consistently exhibit higher estimation bias than simpler predictive embeddings. This empirical finding challenges the direct application of certain causal representation learning methods to socio-economic trajectories and calls for further investigation. Second, we characterize a \textbf{Signal-to-Noise Frontier}, demonstrating that while our framework substantially outperforms classical methods like Heckman selection models (reducing estimation bias by an order of magnitude, from 945\% to under 60\%), detecting realistic, small-magnitude treatment effects (e.g., an 8\% wage premium) requires sample sizes (N > 1,000) beyond those typical in survey data, motivating the use of large-scale administrative registers. We validate our framework on a \textbf{semi-synthetic data generating process (DGP)}, which is carefully calibrated with real-world US labor market data, and provide a comprehensive open-source implementation.
+\noindent This paper introduces CAREER-DML, a framework for estimating heterogeneous causal effects of career transitions using sequential data. We leverage Double/Debiased Machine Learning (DML) combined with recurrent neural network (RNN) embeddings to model high-dimensional career histories and estimate the causal impact of transitioning to an AI-exposed occupation. Our primary contribution is twofold. First, we identify and document a \textbf{Sequential Embedding Ordering Phenomenon} in this domain: causally-regularized embeddings (Variational Information Bottleneck), which are theoretically appealing, consistently exhibit higher estimation bias than simpler predictive embeddings. This empirical finding challenges the direct application of certain causal representation learning methods to socio-economic trajectories and calls for further investigation. Second, we characterize a \textbf{Signal-to-Noise Frontier}, demonstrating that while our framework substantially outperforms classical methods like Heckman selection models (reducing estimation bias by an order of magnitude, from 945\% to 7.6\%), detecting realistic, small-magnitude treatment effects (e.g., an 8\% wage premium) requires sample sizes (N > 1,000) beyond those typical in survey data, motivating the use of large-scale administrative registers. We validate our framework on a \textbf{semi-synthetic data generating process (DGP)}, which is carefully calibrated with real-world US labor market data, and provide a comprehensive open-source implementation.
 \end{abstract}
 
 \vfill
@@ -160,7 +161,7 @@ We execute the full pipeline using our semi-synthetic DGP, with a known ground-t
 \end{table}
 
 \subsection{The Sequential Embedding Ordering Phenomenon}
-Our results consistently show that the Causal GRU (VIB) performs worse than the Predictive GRU. We refer to this as the \textbf{Sequential Embedding Ordering Phenomenon}. This finding, observed across three different DGP configurations (purely synthetic, semi-synthetic, and board-corrected), suggests that the information bottleneck, in compressing the history $H$, may discard causally relevant information that is necessary for predicting the outcome $Y$. In career data, this can be subtle information about career velocity or volatility that is predictive of future earnings but not of the specific transition to an AI-exposed job.
+Our results consistently show that the Causal GRU (VIB) performs worse than the Predictive GRU. We refer to this as the \textbf{Sequential Embedding Ordering Phenomenon}. This finding, observed across three different DGP configurations (purely synthetic, semi-synthetic, and calibrated), suggests that the information bottleneck, in compressing the history $H$, may discard causally relevant information that is necessary for predicting the outcome $Y$. In career data, this can be subtle information about career velocity or volatility that is predictive of future earnings but not of the specific transition to an AI-exposed job.
 
 \subsection{The Signal-to-Noise Frontier}
 Our power analysis reveals the core challenge. At N=1,000, the Minimum Detectable Effect (MDE) is 0.0813. This means our experiment is underpowered to reliably detect the true ATE of 0.08. The signal is drowned out by the noise.

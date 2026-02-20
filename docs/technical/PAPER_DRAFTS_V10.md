@@ -102,7 +102,7 @@ We execute the full pipeline using our semi-synthetic DGP, with a known ground-t
 
 ### 4.2. The Sequential Embedding Ordering Phenomenon
 
-Our results consistently show that the Causal GRU (VIB) performs worse than the Predictive GRU. We refer to this as the **Sequential Embedding Ordering Phenomenon**. This finding, observed across three different DGP configurations (purely synthetic, semi-synthetic, and board-corrected), suggests that the information bottleneck, in compressing the history *H*, may discard causally relevant information that is necessary for predicting the outcome *Y*. In career data, this can be subtle information about career velocity or volatility that is predictive of future earnings but not of the specific transition to an AI-exposed job.
+Our results consistently show that the Causal GRU (VIB) performs worse than the Predictive GRU. We refer to this as the **Sequential Embedding Ordering Phenomenon**. This finding, observed across three different DGP configurations (purely synthetic, semi-synthetic, and calibrated), suggests that the information bottleneck, in compressing the history *H*, may discard causally relevant information that is necessary for predicting the outcome *Y*. In career data, this can be subtle information about career velocity or volatility that is predictive of future earnings but not of the specific transition to an AI-exposed job.
 
 ### 4.3. The Signal-to-Noise Frontier
 

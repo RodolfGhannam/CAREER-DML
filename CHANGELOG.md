@@ -18,7 +18,7 @@ This was a major release reflecting the culmination of the research journey, inc
 
 ### Added
 - **Semi-Synthetic DGP:** A new data generator calibrated with real-world parameters from the NLSY79 and AI exposure scores from Felten et al. (2021).
-- **Corrected Pipeline:** A new main script (`main_board_corrected.py`) that implements two key corrections: equal dimensionality across all embedding variants (`phi_dim=64`) and a realistic treatment effect (`TRUE_ATE=0.08`).
+- **Corrected Pipeline:** A new main script (`main_calibrated.py`) that implements two key corrections: equal dimensionality across all embedding variants (`phi_dim=64`) and a realistic treatment effect (`TRUE_ATE=0.08`).
 - **Power Analysis Module:** `src/power_analysis.py` computes the Minimum Detectable Effect (MDE) for any given sample size, formalising the Signal-to-Noise Frontier.
 
 ### Key Findings
