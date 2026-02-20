@@ -21,7 +21,9 @@ This proposal outlines the plan to scale this validated framework using the Dani
 
 ### Data Source Note
 
-> The semi-synthetic data laboratory uses a Data Generating Process (DGP) calibrated with two real-world US data sources: the **National Longitudinal Survey of Youth 1979 (NLSY79)**, which informs the parameters of labor market dynamics, and the **Felten et al. (2021) AI Occupational Exposure (AIOE) scores**, which define the treatment variable. This ensures that our initial findings are grounded in realistic labor market structures. The validation of our methodology on US-calibrated data before its application to Danish registers provides a valuable cross-country robustness check of the framework itself.
+> The semi-synthetic data laboratory uses a Data Generating Process (DGP) calibrated with two real-world US data sources: the **National Longitudinal Survey of Youth 1979 (NLSY79)**, which informs the parameters of labor market dynamics, and the **Felten et al. (2021) AI Occupational Exposure (AIOE) scores**, which define the treatment variable. This ensures that our initial findings are grounded in realistic labor market structures.
+
+> **Note on the Generative AI Shock:** The reliance on the 2021 AIOE scores is a deliberate methodological choice. It provides a clean, pre-treatment baseline right before the major structural shift caused by the generative AI boom of late 2022. This temporal gap is an analytical advantage, allowing this project to set the stage to longitudinally disentangle the baseline effects of "traditional" AI adoption from the subsequent, compounding wage trajectories triggered by the Generative AI boom within the Danish registers. The validation of our methodology on US-calibrated data before its application to Danish registers provides a valuable cross-country robustness check of the framework itself.
 
 ## 2. Contribution to the Literature
 
