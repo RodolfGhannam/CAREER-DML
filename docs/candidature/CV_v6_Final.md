@@ -6,18 +6,20 @@
 
 ## Profile
 
-Executive and practitioner-researcher with over 15 years of leadership experience in corporate strategy and finance. My career has been defined by a transition from traditional management to data-driven, quantitative problem-solving. While directing operations for a diversified conglomerate, I designed a proprietary 5-stage customer service methodology whose AI-powered analytics revealed significant heterogeneity in employee development needs—forcing a strategic shift from group training to personalized coaching. This field-based discovery of heterogeneous treatment effects is the direct inspiration for my PhD research. I now seek to formalize this practical experience with the academic rigor of the PhD program at CBS, contributing to the **'Digital Transformations'** research area by developing causal machine learning methods to study the heterogeneous effects of AI adoption on career trajectories.
+Executive and practitioner-researcher with over 15 years of leadership experience in corporate strategy and finance, recognized with General Motors' highest dealership distinction (GM "A" Excellence Award) for four consecutive years (2018–2021). My career has been defined by a transition from traditional management to data-driven, quantitative problem-solving. While directing operations for a diversified conglomerate, I designed a proprietary 5-stage customer service methodology whose AI-powered analytics revealed significant heterogeneity in employee development needs—forcing a strategic shift from group training to personalized coaching. This field-based discovery of heterogeneous treatment effects is the direct inspiration for my PhD research. I now seek to formalize this practical experience with the academic rigor of the PhD program at CBS, contributing to the **'Digital Transformations'** research area by developing causal machine learning methods to study the heterogeneous effects of AI adoption on career trajectories.
 
 ---
 
-## Academic Education
+## Education
 
 | Year | Degree | Institution | Details |
 | :--- | :--- | :--- | :--- |
+| 2016 | **Certificate in Policy & Strategy (CEPE)** | Escola Superior de Guerra (ESG), Ministry of Defence, Brazil | 204 hours of studies in national policy and strategy. |
 | 2018 | **Technologist Degree in Management Processes** | Faculdade Educacional da Lapa (FAEL), Brazil | Higher education degree in managerial processes (Tecnólogo em Processos Gerenciais). |
 | 2020 | **MBA in Management, Entrepreneurship & Marketing** | Pontifical Catholic University of Rio Grande do Sul (PUCRS), Brazil | Grade: 8.0/10. Capstone: BSC application in public management. 363 hours. |
 | 2022 | **MBA in Marketing: Digital Media** | Fundação Getulio Vargas (FGV), Brazil | **Triple Crown accredited (AACSB, EQUIS, AMBA)**. Grade: 8.23/10. 480 hours. |
 | 2024 | **Bachelor of Business Administration** | Centro Universitário FAEL (UNIFAEL), Brazil | Full undergraduate degree in management (Bacharel em Administração). |
+| 2025 | **MIT xPRO Professional Certificate in AI** | Massachusetts Institute of Technology (MIT) | Achieved 100% score on the final capstone project. |
 | 2025 (in progress) | **MSc in Administration — Digital Business** | American Global Tech University (AGTU), Orlando, FL, USA | Focus on digital business models and data-driven strategy. |
 
 ---
@@ -76,16 +78,6 @@ Founded and scaled a food distribution company from the ground up, including bra
 - **Data Science & Econometrics:** Python (Pandas, NumPy), R, SQL, Statsmodels, BI Dashboards.
 - **Business & Domain:** P&L Management, Regulatory Compliance (Central Bank of Brazil), Brand Strategy.
 - **Languages:** Portuguese (Native), English (Fluent), Spanish (Intermediate).
-
----
-
-## Honors & Distinctions
-
-| Year | Distinction | Details |
-| :--- | :--- | :--- |
-| 2025 | **MIT xPRO Professional Certificate in AI** | Massachusetts Institute of Technology. Achieved 100% score on the final capstone project. |
-| 2018–2021 | **GM "A" Excellence Award** | General Motors' highest dealership distinction, awarded 4 consecutive years. |
-| 2016 | **Certificate in Policy & Strategy (CEPE)** | Escola Superior de Guerra (ESG), Ministry of Defence, Brazil. 204 hours. |
 
 ---
 
